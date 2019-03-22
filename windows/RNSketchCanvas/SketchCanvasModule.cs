@@ -31,16 +31,9 @@ namespace RNSketchCanvas
         private const string MODULE_NAME = "SketchCanvasModule";
         public SketchCanvasModule(ReactContext reactContext) : base(reactContext)
         {
- 
-         
         }
-        public override string Name
-        {
-            get
-            {
-                return MODULE_NAME;
-            }
-        }
+
+        public override string Name => MODULE_NAME;
 
         [ReactMethod]
         public void transferToBase64(int tag, string type, bool transparent, bool includeImage, bool includeText, bool cropToImageSize, ICallback callback)
@@ -51,23 +44,13 @@ namespace RNSketchCanvas
             {
                 uiManager.AddUIBlock(new UIBlock(async (nativeViewHierarchyManager) =>
                 {
-
-
                     var view = (SketchCanvas)nativeViewHierarchyManager.ResolveView(tag);
                     var bitmap = view.bitmap;
-
                     var base64 = await view.getBase64(type, transparent, includeImage, includeText, cropToImageSize);
 
 
                     Debug.WriteLine(base64);
                     callback.Invoke(null, base64);
-
-
-                    //await CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal, async () =>
-                    //{
-           
-                    //});
-
                 }
                 ));
             }
@@ -75,12 +58,8 @@ namespace RNSketchCanvas
             {
                 callback.Invoke(ex.Message, null);
             }
-
         }
-
- 
     }
-
 }
 
 

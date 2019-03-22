@@ -15,6 +15,11 @@ using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Graphics.Display;
 using Windows.Foundation;
+using ReactNative.Bridge;
+using ReactNative.UIManager;
+using ReactNative.Views.Image;
+using ReactNative.UIManager.Events;
+using Newtonsoft.Json.Linq;
 
 namespace RNSketchCanvas
 {
@@ -26,20 +31,27 @@ namespace RNSketchCanvas
         private List<SketchData> mPaths = new List<SketchData>();
         private SketchData mCurrentPath = null;
         private Image image = new Image();
+        public ThemedReactContext Context { get; set; }
 
-        public SketchCanvas()
+        public SketchCanvas(ThemedReactContext Context)
         {
-            
+            this.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center;
+            this.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center;
+            this.Context = Context;
             this.Children.Add(image);
         }
         public async Task<bool> openImageFile(string filename, string directory, string mode)
         {
-
+            var restult = false;
             try
             {
-                Windows.Storage.StorageFolder installedLocation = Windows.ApplicationModel.Package.Current.InstalledLocation;
-                Windows.Storage.StorageFile imageFile = await installedLocation.GetFileAsync(filename);
-   
+                //var installedLocation = Windows.ApplicationModel.Package.Current.InstalledLocation;
+
+                //FIXME - only open files from TemporaryFolder is for now supported
+                var tempState = Windows.Storage.ApplicationData.Current.TemporaryFolder;
+                var filenameOnly = System.IO.Path.GetFileName(filename);
+
+                Windows.Storage.StorageFile imageFile = await tempState.GetFileAsync(filenameOnly);
 
                 using (IRandomAccessStream fileStream = await imageFile.OpenAsync(FileAccessMode.Read))
                 {
@@ -52,18 +64,18 @@ namespace RNSketchCanvas
                     await mBackgroundImage.SetSourceAsync(fileStream);
 
                     mBackgroundImage = this.ResizedImage(mBackgroundImage, (int)this.Width, (int)this.Height, mode, WriteableBitmapExtensions.Interpolation.Bilinear);
-
+                    restult = true;
                 }
 
             }
             catch (Exception)
             {
+
             }
 
-            setCanvasText("test123");
             reDraw();
 
-            return false;
+            return restult;
         }
 
 
@@ -71,8 +83,9 @@ namespace RNSketchCanvas
         public WriteableBitmap ResizedImage(WriteableBitmap sourceImage, int maxWidth, int maxHeight, string mode, WriteableBitmapExtensions.Interpolation interpolation)
         {
 
-          
- 
+            //FIXME - Add support for string mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
+
+
             var origHeight = sourceImage.PixelHeight;
             var origWidth = sourceImage.PixelWidth;
 
@@ -85,7 +98,7 @@ namespace RNSketchCanvas
             var newHeight = (int)(origHeight * ratio);
             var newWidth = (int)(origWidth * ratio);
 
-   
+
 
             return sourceImage.Resize(newWidth, newHeight, interpolation);
 
@@ -114,7 +127,7 @@ namespace RNSketchCanvas
 
             //        // draw original bitmap
             //        ds.DrawImage(bitmap);
-                    
+
             //        // draw something on it
             //        ds.FillCircle(bitmap.SizeInPixels.Width / 2,
             //            bitmap.SizeInPixels.Height / 2, 50, Colors.GreenYellow);
@@ -129,7 +142,7 @@ namespace RNSketchCanvas
             //    this.bitmap = await BitmapFactory.FromStream(s);
 
 
-       
+
             //}
 
             //TextBlock tb = new TextBlock();
@@ -326,29 +339,7 @@ namespace RNSketchCanvas
 
         public void addPath(int id, int strokeColor, float strokeWidth, List<Point> points)
         {
-            //boolean exist = false;
-            //for (SketchData data: mPaths)
-            //{
-            //    if (data.id == id)
-            //    {
-            //        exist = true;
-            //        break;
-            //    }
-            //}
-
-            //if (!exist)
-            //{
-            //    SketchData newPath = new SketchData(id, strokeColor, strokeWidth, points);
-            //    mPaths.add(newPath);
-            //    boolean isErase = strokeColor == Color.TRANSPARENT;
-            //    if (isErase && mDisableHardwareAccelerated == false)
-            //    {
-            //        mDisableHardwareAccelerated = true;
-            //        setLayerType(View.LAYER_TYPE_SOFTWARE, null);
-            //    }
-            //    newPath.draw(mDrawingCanvas);
-            //    invalidateCanvas(true);
-            //}
+           //FIXME - for now not supported
         }
 
         public void deletePath(int id)
@@ -367,55 +358,60 @@ namespace RNSketchCanvas
             {
                 if (mCurrentPath.isTranslucent)
                 {
+                    //FIXME - draw translucent not supported for now.
                     //mCurrentPath.draw(mDrawingCanvas);
                     //mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
                 }
                 mCurrentPath = null;
             }
 
-            
+
         }
 
         public void onSaved(bool success, string path)
         {
-            //    WritableMap event = Arguments.createMap();
-            //event.putBoolean("success", success);
-            //event.putString("path", path);
-            //mContext.getJSModule(RCTEventEmitter.class).receiveEvent(
-            //    getId(),
-            //    "topChange",
-            //    event);
+            var eventData = new JObject
+            {
+                { "success", success },
+                { "path", path },
+            };
+
+            Context.GetJavaScriptModule<RCTEventEmitter>()
+                .receiveEvent(this.GetTag(), "topChange", eventData);
         }
 
-        public void save(string format, string folder, string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
+        public async void save(string format, string folder, string filename, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
         {
-            //File f = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + File.separator + folder);
-            //boolean success = f.exists() ? true : f.mkdirs();
-            //if (success)
-            //{
-            //    Bitmap bitmap = createImage(format.equals("png") && transparent, includeImage, includeText, cropToImageSize);
+            //FIXME - Implement missing features
+            if (includeImage == false || includeText == false || cropToImageSize == true)
+                throw new NotImplementedException();
 
-            //    File file = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) +
-            //        File.separator + folder + File.separator + filename + (format.equals("png") ? ".png" : ".jpg"));
-            //    try
-            //    {
-            //        bitmap.compress(
-            //            format.equals("png") ? Bitmap.CompressFormat.PNG : Bitmap.CompressFormat.JPEG,
-            //            format.equals("png") ? 100 : 90,
-            //            new FileOutputStream(file));
-            //        this.onSaved(true, file.getPath());
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        e.printStackTrace();
-            //        onSaved(false, null);
-            //    }
-            //}
-            //else
-            //{
-            //    Log.e("SketchCanvas", "Failed to create folder!");
-            //    onSaved(false, null);
-            //}
+            var file = await Windows.Storage.ApplicationData.Current.TemporaryFolder.CreateFileAsync(filename, CreationCollisionOption.GenerateUniqueName);
+
+            try
+            {
+                using (IRandomAccessStream stream = await file.OpenAsync(FileAccessMode.ReadWrite))
+                {
+                    var fileFormat = format.Contains("png") ? "png" : "jpeg";
+
+                    BitmapEncoder encoder = await BitmapEncoder
+                        .CreateAsync(format.Contains("png") ? BitmapEncoder.PngEncoderId : BitmapEncoder.JpegEncoderId, stream);
+                    Stream pixelStream = bitmap.PixelBuffer.AsStream();
+                    byte[] pixels = new byte[pixelStream.Length];
+                    await pixelStream.ReadAsync(pixels, 0, pixels.Length);
+
+                    encoder.SetPixelData(BitmapPixelFormat.Bgra8, transparent ? BitmapAlphaMode.Premultiplied : BitmapAlphaMode.Ignore,
+                        (uint)bitmap.PixelWidth, (uint)bitmap.PixelHeight, 96.0, 96.0, pixels);
+                    await encoder.FlushAsync();
+                    this.onSaved(true, file.Path);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                this.onSaved(false, null);
+            }
+
         }
 
         public void onSizeChanged(int Width, int Height, int oldWidth, int oldHeight)
@@ -425,6 +421,10 @@ namespace RNSketchCanvas
 
         public async Task<string> getBase64(string format, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
         {
+            //FIXME - Implement missing features
+            if (includeImage == false || includeText == false || cropToImageSize == false)
+                throw new NotImplementedException();
+
             try
             {
                 using (var memoryStream = new MemoryStream())
@@ -439,7 +439,7 @@ namespace RNSketchCanvas
                     byte[] pixels = new byte[pixelStream.Length];
                     await pixelStream.ReadAsync(pixels, 0, pixels.Length);
 
-                    encoder.SetPixelData(BitmapPixelFormat.Bgra8, transparent ? BitmapAlphaMode.Premultiplied : BitmapAlphaMode.Ignore, 
+                    encoder.SetPixelData(BitmapPixelFormat.Bgra8, transparent ? BitmapAlphaMode.Premultiplied : BitmapAlphaMode.Ignore,
                         (uint)bitmap.PixelWidth, (uint)bitmap.PixelHeight, 96.0, 96.0, pixels);
                     await encoder.FlushAsync();
 
@@ -458,70 +458,20 @@ namespace RNSketchCanvas
 
         private WriteableBitmap createImage(bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
         {
-
-
+            //FIXME - Not in use for now, but should be implemented to support all features
             return BitmapFactory.New((int)this.Width, (int)this.Height);
-            //Bitmap bitmap = Bitmap.createBitmap(
-            //    mBackgroundImage != null && cropToImageSize ? mOriginalWidth : getWidth(),
-            //    mBackgroundImage != null && cropToImageSize ? mOriginalHeight : getHeight(),
-            //    Bitmap.Config.ARGB_8888);
-            //Canvas canvas = new Canvas(bitmap);
-            //canvas.drawARGB(transparent ? 0 : 255, 255, 255, 255);
-
-            //if (mBackgroundImage != null && includeImage)
-            //{
-            //    Rect targetRect = new Rect();
-            //    Utility.fillImage(mBackgroundImage.getWidth(), mBackgroundImage.getHeight(),
-            //        bitmap.getWidth(), bitmap.getHeight(), "AspectFit").roundOut(targetRect);
-            //    canvas.drawBitmap(mBackgroundImage, null, targetRect, null);
-            //}
-
-            //if (includeText)
-            //{
-            //    for (CanvasText text: mArrSketchOnText)
-            //    {
-            //        canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-            //    }
-            //}
-
-            //if (mBackgroundImage != null && cropToImageSize)
-            //{
-            //    Rect targetRect = new Rect();
-            //    Utility.fillImage(mDrawingBitmap.getWidth(), mDrawingBitmap.getHeight(),
-            //        bitmap.getWidth(), bitmap.getHeight(), "AspectFill").roundOut(targetRect);
-            //    canvas.drawBitmap(mDrawingBitmap, null, targetRect, mPaint);
-            //}
-            //else
-            //{
-            //    canvas.drawBitmap(mDrawingBitmap, 0, 0, mPaint);
-            //}
-
-            //if (includeText)
-            //{
-            //    for (CanvasText text: mArrTextOnSketch)
-            //    {
-            //        canvas.drawText(text.text, text.drawPosition.x + text.lineOffset.x, text.drawPosition.y + text.lineOffset.y, text.paint);
-            //    }
-            //}
-            //return bitmap;
         }
 
         private async void reDraw()
         {
-
-
-
             await Windows.ApplicationModel.Core.CoreApplication.MainView.CoreWindow.Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
             () =>
             {
-          
                 bitmap = mBackgroundImage != null ? mBackgroundImage.Clone() : BitmapFactory.New((int)this.Width, (int)this.Height);
 
                 this.image.Source = bitmap;
                 this.image.Width = bitmap.PixelWidth;
                 this.image.Height = bitmap.PixelHeight;
-
-               
 
                 try
                 {
@@ -534,7 +484,6 @@ namespace RNSketchCanvas
                 {
                 }
             });
-
         }
 
     }

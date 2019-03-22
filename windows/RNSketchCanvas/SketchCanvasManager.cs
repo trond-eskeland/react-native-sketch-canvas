@@ -21,11 +21,11 @@ namespace RNSketchCanvas
     public class SketchCanvasManager : SimpleViewManager<SketchCanvas>
     {
         public override string Name => "RNSketchCanvas";
-        public  SketchCanvas Canvas = null;
+        public SketchCanvas Canvas = null;
 
         protected override SketchCanvas CreateViewInstance(ThemedReactContext reactContext)
         {
-            this.Canvas = new SketchCanvas();
+            this.Canvas = new SketchCanvas(reactContext);
             return this.Canvas;
         }
 
@@ -34,6 +34,7 @@ namespace RNSketchCanvas
         {
             view.onSizeChanged((int)dimensions.Width, (int)dimensions.Height, (int)this.Canvas.Width, (int)this.Canvas.Height);
             base.SetDimensions(view, dimensions);
+
         }
 
         [ReactProp("localSourceImage")]
@@ -41,7 +42,7 @@ namespace RNSketchCanvas
         {
             if (options != null)
             {
-                var path = options["path"]?.Value<string>();
+                var filename = options["filename"]?.Value<string>();
                 var directory = options["directory"]?.Value<string>();
                 var mode = options["mode"]?.Value<string>();
                 var uiManager = view.GetReactContext().GetNativeModule<UIManagerModule>();
@@ -50,23 +51,19 @@ namespace RNSketchCanvas
                 {
                     uiManager.AddUIBlock(new UIBlock(async (nativeViewHierarchyManager) =>
                     {
-
-
                         var uiview = (SketchCanvas)nativeViewHierarchyManager.ResolveView(view.GetTag());
-      
 
-                       await uiview.openImageFile(path, directory, mode);
+                        await uiview.openImageFile(filename, directory, mode);
                     }
                     ));
                 }
                 catch (Exception)
                 {
-                   
+
                 }
- 
+
             }
         }
-
 
         public override void ReceiveCommand(SketchCanvas view, int commandId, JArray args)
         {
@@ -97,8 +94,15 @@ namespace RNSketchCanvas
                     view.deletePath(id);
                     break;
                 case Commands.save:
-                    //fixme
-                    view.save("", "", "", false, false, false, false);
+                    var format = args[0].Value<string>();
+                    var folder = args[1].Value<string>();
+                    var filename = args[2].Value<string>();
+                    var transparent = args[3].Value<bool>();
+                    var includeImage = args[4].Value<bool>();
+                    var includeText = args[5].Value<bool>();
+                    var cropToImageSize = args[6].Value<bool>();
+
+                    view.save(format, folder, filename, transparent, includeImage, includeText, cropToImageSize);
                     break;
                 case Commands.endPath:
                     view.end();
@@ -106,7 +110,7 @@ namespace RNSketchCanvas
                 default:
                     break;
             }
- 
+
             Debug.WriteLine(((Commands)commandId).ToString());
         }
 
