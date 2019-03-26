@@ -29,6 +29,7 @@ class SketchCanvas extends React.Component {
     strokeWidth: PropTypes.number,
     onPathsChange: PropTypes.func,
     onStrokeStart: PropTypes.func,
+    onDisabledTouch: PropTypes.func,
     onStrokeChanged: PropTypes.func,
     onStrokeEnd: PropTypes.func,
     onSketchSaved: PropTypes.func,
@@ -60,6 +61,7 @@ class SketchCanvas extends React.Component {
     strokeWidth: 3,
     onPathsChange: () => { },
     onStrokeStart: () => { },
+    onDisabledTouch: () => { },
     onStrokeChanged: () => { },
     onStrokeEnd: () => { },
     onSketchSaved: () => { },
@@ -161,46 +163,55 @@ class SketchCanvas extends React.Component {
       onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
 
       onPanResponderGrant: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
-        if (gestureState.numberActiveTouches > 1) return
+        // if (!this.props.touchEnabled) return
         const e = evt.nativeEvent
         this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
-        this._path = {
-          id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
-          width: this.props.strokeWidth, data: []
-        }
-        
-        UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.RNSketchCanvas.Commands.newPath,
-          [
-            this._path.id,
-            processColor(this._path.color),
-            this._path.width * this._screenScale
-          ]
-        )
-        UIManager.dispatchViewManagerCommand(
-          this._handle,
-          UIManager.RNSketchCanvas.Commands.addPoint,
-          [
-            parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
-          ]
-        )
         const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2)), y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
-        this._path.data.push(`${x},${y}`)
-        this.props.onStrokeStart(x, y)
+
+        if (this.props.touchEnabled) {
+          this._path = {
+            id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
+            width: this.props.strokeWidth, data: []
+          }
+          UIManager.dispatchViewManagerCommand(
+            this._handle,
+            UIManager.RNSketchCanvas.Commands.newPath,
+            [
+              this._path.id,
+              processColor(this._path.color),
+              this._path.width * this._screenScale
+            ]
+          )
+          UIManager.dispatchViewManagerCommand(
+            this._handle,
+            UIManager.RNSketchCanvas.Commands.addPoint,
+            [
+              parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
+              parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
+            ]
+          )
+          this._path.data.push(`${x},${y}`)
+          this.props.onStrokeStart(x, y)
+        } else {
+          this.props.onDisabledTouch(x, y)
+        }
+
+        
       },
       onPanResponderMove: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
+        // if (!this.props.touchEnabled) return
         if (this._path) {
-          UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-            parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-            parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
-          ])
           const x = parseFloat((gestureState.moveX - this._offset.x).toFixed(2)), y = parseFloat((gestureState.moveY - this._offset.y).toFixed(2))
-          this._path.data.push(`${x},${y}`)
-          this.props.onStrokeChanged(x, y)
+
+          if (this.props.touchEnabled) { 
+            UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
+              parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
+              parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
+            ])
+            
+            this._path.data.push(`${x},${y}`)
+            this.props.onStrokeChanged(x, y)
+          }
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
