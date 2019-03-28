@@ -15,6 +15,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.UI;
 using ReactNative.Bridge;
 using ReactNative.Views.Image;
+using RNSketchCanvas.Model;
 
 namespace RNSketchCanvas
 {
@@ -25,6 +26,8 @@ namespace RNSketchCanvas
 
         protected override SketchCanvas CreateViewInstance(ThemedReactContext reactContext)
         {
+            RNSketchCanvas.BitmapFont.RegisterFont("arial", new int[] { 15 });
+
             this.Canvas = new SketchCanvas(reactContext);
             return this.Canvas;
         }
@@ -34,7 +37,7 @@ namespace RNSketchCanvas
         {
             view.onSizeChanged((int)dimensions.Width, (int)dimensions.Height, (int)this.Canvas.Width, (int)this.Canvas.Height);
             base.SetDimensions(view, dimensions);
-
+           
         }
 
         [ReactProp("localSourceImage")]
@@ -65,6 +68,12 @@ namespace RNSketchCanvas
             }
         }
 
+        [ReactProp("text")]
+        public void SetText(SketchCanvas view, JArray text)
+        {
+            view.setCanvasText(text);
+        }
+
         public override void ReceiveCommand(SketchCanvas view, int commandId, JArray args)
         {
             base.ReceiveCommand(view, commandId, args);
@@ -87,7 +96,7 @@ namespace RNSketchCanvas
                     break;
                 case Commands.addPath:
                     //fixme
-                    view.addPath(0, 0, 0, new List<Point>());
+                    view.addPath(0, 0, 0, new List<Model.Point>());
                     break;
                 case Commands.deletePath:
                     id = args[0].Value<int>();

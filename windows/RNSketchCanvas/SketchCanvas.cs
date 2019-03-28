@@ -20,6 +20,8 @@ using ReactNative.UIManager;
 using ReactNative.Views.Image;
 using ReactNative.UIManager.Events;
 using Newtonsoft.Json.Linq;
+using System.Diagnostics;
+using Newtonsoft.Json;
 
 namespace RNSketchCanvas
 {
@@ -29,17 +31,24 @@ namespace RNSketchCanvas
         private WriteableBitmap mBackgroundImage { get; set; }
 
         private List<SketchData> mPaths = new List<SketchData>();
+        private List<Model.ImageText> imageText = new List<Model.ImageText>();
         private SketchData mCurrentPath = null;
-        private Image image = new Image();
+        private StackPanel stack = new StackPanel() { HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center, VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center};
+        private Image image = new Image() { Name = "img" };
         public ThemedReactContext Context { get; set; }
 
         public SketchCanvas(ThemedReactContext Context)
         {
-            this.HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center;
-            this.VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center;
             this.Context = Context;
-            this.Children.Add(image);
+
+            this.Margin = new Windows.UI.Xaml.Thickness(10, 10, 10, 10);
+
+            stack.Children.Add(image);
+            this.image.Stretch = Stretch.None;
+
+            this.Children.Add(stack);
         }
+
         public async Task<bool> openImageFile(string filename, string directory, string mode)
         {
             var restult = false;
@@ -82,14 +91,10 @@ namespace RNSketchCanvas
 
         public WriteableBitmap ResizedImage(WriteableBitmap sourceImage, int maxWidth, int maxHeight, string mode, WriteableBitmapExtensions.Interpolation interpolation)
         {
-
             //FIXME - Add support for string mode: 'AspectFill' | 'AspectFit' | 'ScaleToFill'
-
 
             var origHeight = sourceImage.PixelHeight;
             var origWidth = sourceImage.PixelWidth;
-
-
 
             var ratioX = maxWidth / (float)origWidth;
             var ratioY = maxHeight / (float)origHeight;
@@ -99,213 +104,26 @@ namespace RNSketchCanvas
             var newWidth = (int)(origWidth * ratio);
 
 
-
             return sourceImage.Resize(newWidth, newHeight, interpolation);
-
         }
 
 
-        public async void setCanvasText(string aText)
+        public void setCanvasText(JArray text)
         {
+            this.imageText = new List<Model.ImageText>();
 
+            foreach (var item in text)
+            {
+                try
+                {
+                    imageText.Add(item.ToObject<Model.ImageText>());
+                }
+                catch (Exception)
+                {
+                }
+            }
 
-
-
-            //CanvasDevice device = CanvasDevice.GetSharedDevice();
-            //CanvasBitmap bitmap = CanvasBitmap.CreateFromBytes(device, new byte[0], 100, 100, Windows.Graphics.DirectX.DirectXPixelFormat.Unknown);
-
-            //CanvasRenderTarget offScreen = null;
-
-            //if (bitmap != null)
-            //{
-            //    offScreen = new CanvasRenderTarget(device,
-            //        bitmap.SizeInPixels.Width, bitmap.SizeInPixels.Height, 96);
-            //    using (var ds = offScreen.CreateDrawingSession())
-            //    {
-            //        // do not forget clear buffer
-            //        ds.Clear(Colors.Transparent);
-
-            //        // draw original bitmap
-            //        ds.DrawImage(bitmap);
-
-            //        // draw something on it
-            //        ds.FillCircle(bitmap.SizeInPixels.Width / 2,
-            //            bitmap.SizeInPixels.Height / 2, 50, Colors.GreenYellow);
-
-            //    }
-
-            //    IRandomAccessStream s = null;
-
-
-            //    await offScreen.SaveAsync(s, CanvasBitmapFileFormat.Auto);
-
-            //    this.bitmap = await BitmapFactory.FromStream(s);
-
-
-
-            //}
-
-            //TextBlock tb = new TextBlock();
-            //tb.Foreground = new SolidColorBrush(Colors.White);
-            //tb.Text = "some text";
-            //tb.FontSize = 20;
-            //TranslateTransform tf = new TranslateTransform() { X = 100, Y = 100 };
-
-
-
-
-
-            //var clr = new Microsoft.Graphics.Canvas.UI.Xaml.CanvasControl();
-
-            //this.Children.Add(clr);
-            //var cl = new CanvasCommandList(clr);
-
-
-            //using (var clds = cl.CreateDrawingSession())
-            //{
-            //    clds.DrawText(aText, new System.Numerics.Vector2(10f), Color.FromArgb(255, 100, 100, 100));
-            //}
-
-
-
-            //var displayInformation = DisplayInformation.GetForCurrentView();
-
-
-            //clr.Arrange(new Rect(0, 0, 100, 100));
-
-            //var renderTargetBitmap = new RenderTargetBitmap();
-            //await renderTargetBitmap.RenderAsync(clr, 100, 100);
-
-            //var pixelBuffer = await renderTargetBitmap.GetPixelsAsync();
-
-
-            //var bb = await BitmapFactory.FromPixelBuffer(pixelBuffer, 100, 100);
-
-            //bitmap = bb;
-
-            //this.image.Source = bitmap;
-
-            //var file = await ApplicationData.Current.LocalFolder.CreateFileAsync("Screen.jpg", CreationCollisionOption.ReplaceExisting);
-            //using (var fileStream = await file.OpenAsync(FileAccessMode.ReadWrite))
-            //{
-            //    var encoder = await BitmapEncoder.CreateAsync(BitmapEncoder.JpegEncoderId, fileStream);
-
-            //    encoder.SetPixelData(
-            //            BitmapPixelFormat.Bgra8,
-            //            BitmapAlphaMode.Ignore,
-            //            (uint)renderTargetBitmap.PixelWidth,
-            //            (uint)renderTargetBitmap.PixelHeight,
-            //            displayInformation.LogicalDpi,
-            //            displayInformation.LogicalDpi,
-            //            pixelBuffer.ToArray());
-
-            //    await encoder.FlushAsync();
-            //}
-
-
-            //mArrCanvasText.clear();
-            //mArrSketchOnText.clear();
-            //mArrTextOnSketch.clear();
-
-            //if (aText != null)
-            //{
-            //    for (int i = 0; i < aText.size(); i++)
-            //    {
-            //        ReadableMap property = aText.getMap(i);
-            //        if (property.hasKey("text"))
-            //        {
-            //            String alignment = property.hasKey("alignment") ? property.getString("alignment") : "Left";
-            //            int lineOffset = 0, maxTextWidth = 0;
-            //            String[] lines = property.getString("text").split("\n");
-            //            ArrayList<CanvasText> textSet = new ArrayList<CanvasText>(lines.length);
-            //            for (String line: lines)
-            //            {
-            //                ArrayList<CanvasText> arr = property.hasKey("overlay") && "TextOnSketch".equals(property.getString("overlay")) ? mArrTextOnSketch : mArrSketchOnText;
-            //                CanvasText text = new CanvasText();
-            //                Paint p = new Paint(Paint.ANTI_ALIAS_FLAG);
-            //                p.setTextAlign(Paint.Align.LEFT);
-            //                text.text = line;
-            //                if (property.hasKey("font"))
-            //                {
-            //                    Typeface font;
-            //                    try
-            //                    {
-            //                        font = Typeface.createFromAsset(mContext.getAssets(), property.getString("font"));
-            //                    }
-            //                    catch (Exception ex)
-            //                    {
-            //                        font = Typeface.create(property.getString("font"), Typeface.NORMAL);
-            //                    }
-            //                    p.setTypeface(font);
-            //                }
-            //                p.setTextSize(property.hasKey("fontSize") ? (float)property.getDouble("fontSize") : 12);
-            //                p.setColor(property.hasKey("fontColor") ? property.getInt("fontColor") : 0xFF000000);
-            //                text.anchor = property.hasKey("anchor") ? new PointF((float)property.getMap("anchor").getDouble("x"), (float)property.getMap("anchor").getDouble("y")) : new PointF(0, 0);
-            //                text.position = property.hasKey("position") ? new PointF((float)property.getMap("position").getDouble("x"), (float)property.getMap("position").getDouble("y")) : new PointF(0, 0);
-            //                text.paint = p;
-            //                text.isAbsoluteCoordinate = !(property.hasKey("coordinate") && "Ratio".equals(property.getString("coordinate")));
-            //                text.textBounds = new Rect();
-            //                p.getTextBounds(text.text, 0, text.text.length(), text.textBounds);
-
-            //                text.lineOffset = new PointF(0, lineOffset);
-            //                lineOffset += text.textBounds.height() * 1.5 * (property.hasKey("lineHeightMultiple") ? property.getDouble("lineHeightMultiple") : 1);
-            //                maxTextWidth = Math.max(maxTextWidth, text.textBounds.width());
-
-            //                arr.add(text);
-            //                mArrCanvasText.add(text);
-            //                textSet.add(text);
-            //            }
-            //            for (CanvasText text: textSet)
-            //            {
-            //                text.height = lineOffset;
-            //                if (text.textBounds.width() < maxTextWidth)
-            //                {
-            //                    float diff = maxTextWidth - text.textBounds.width();
-            //                    text.textBounds.left += diff * text.anchor.x;
-            //                    text.textBounds.right += diff * text.anchor.x;
-            //                }
-            //            }
-            //            if (getWidth() > 0 && getHeight() > 0)
-            //            {
-            //                for (CanvasText text: textSet)
-            //                {
-            //                    text.height = lineOffset;
-            //                    PointF position = new PointF(text.position.x, text.position.y);
-            //                    if (!text.isAbsoluteCoordinate)
-            //                    {
-            //                        position.x *= getWidth();
-            //                        position.y *= getHeight();
-            //                    }
-            //                    position.x -= text.textBounds.left;
-            //                    position.y -= text.textBounds.top;
-            //                    position.x -= (text.textBounds.width() * text.anchor.x);
-            //                    position.y -= (text.height * text.anchor.y);
-            //                    text.drawPosition = position;
-            //                }
-            //            }
-            //            if (lines.length > 1)
-            //            {
-            //                for (CanvasText text: textSet)
-            //                {
-            //                    switch (alignment)
-            //                    {
-            //                        case "Left":
-            //                        default:
-            //                            break;
-            //                        case "Right":
-            //                            text.lineOffset.x = (maxTextWidth - text.textBounds.width());
-            //                            break;
-            //                        case "Center":
-            //                            text.lineOffset.x = (maxTextWidth - text.textBounds.width()) / 2;
-            //                            break;
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-
-            //invalidateCanvas(false);
+            reDraw();
         }
 
         public void clear()
@@ -320,14 +138,13 @@ namespace RNSketchCanvas
             mPaths.Add(mCurrentPath);
         }
 
-        public void addPoint(Point point)
+        public  void addPoint(Model.Point point)
         {
-
-            //point.ScaleImage(this.Width, this.Height, mBackgroundImage.PixelHeight, mBackgroundImage.PixelWidth);
             mCurrentPath.addPoint(point);
 
             if (mCurrentPath.isTranslucent)
             {
+                //FIXME
                 //mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
                 //mCurrentPath.draw(mTranslucentDrawingCanvas);
             }
@@ -337,9 +154,9 @@ namespace RNSketchCanvas
             }
         }
 
-        public void addPath(int id, int strokeColor, float strokeWidth, List<Point> points)
+        public void addPath(int id, int strokeColor, float strokeWidth, List<Model.Point> points)
         {
-           //FIXME - for now not supported
+            //FIXME
         }
 
         public void deletePath(int id)
@@ -416,7 +233,7 @@ namespace RNSketchCanvas
 
         public void onSizeChanged(int Width, int Height, int oldWidth, int oldHeight)
         {
-            reDraw();
+           //  reDraw();
         }
 
         public async Task<string> getBase64(string format, bool transparent, bool includeImage, bool includeText, bool cropToImageSize)
@@ -469,10 +286,6 @@ namespace RNSketchCanvas
             {
                 bitmap = mBackgroundImage != null ? mBackgroundImage.Clone() : BitmapFactory.New((int)this.Width, (int)this.Height);
 
-                this.image.Source = bitmap;
-                this.image.Width = bitmap.PixelWidth;
-                this.image.Height = bitmap.PixelHeight;
-
                 try
                 {
                     foreach (var item in mPaths)
@@ -483,6 +296,24 @@ namespace RNSketchCanvas
                 catch (Exception)
                 {
                 }
+
+                try
+                {
+                    foreach (var item in imageText)
+                    {
+                        //FIXME, only arial size 15 is supported.
+                        bitmap.DrawString(item.text, item.position.x, item.position.y, "arial", 15, item.fontColor);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine(ex.Message);
+                }
+
+
+                this.image.Source = bitmap;
+                //this.image.Width = bitmap.PixelWidth;
+                //this.image.Height = bitmap.PixelHeight;
             });
         }
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using RNSketchCanvas.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;

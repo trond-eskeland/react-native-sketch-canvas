@@ -121,7 +121,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="BitmapFont.cs" />
-    <Compile Include="Point.cs" />
+    <Compile Include="Model\ImageText.cs" />
+    <Compile Include="Model\Point.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SketchCanvasManager.cs" />
     <Compile Include="SketchCanvasModule.cs" />
@@ -143,10 +144,20 @@
     </PackageReference>
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="ReactNative">
-      <HintPath>..\..\..\..\..\windows\test1\bin\x64\Debug\ReactNative.dll</HintPath>
-    </Reference>
+    <ProjectReference Include="..\..\..\..\react-native-windows\ReactWindows\ReactNative\ReactNative.csproj">
+      <Project>{c7673ad5-e3aa-468c-a5fd-fa38154e205c}</Project>
+      <Name>ReactNative</Name>
+    </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <Content Include="Assets\arial_15.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Assets\arial_15.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup />
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
