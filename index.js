@@ -16,6 +16,7 @@ import {
 } from 'react-native';
 import SketchCanvas from './src/SketchCanvas'
 import PropTypes from 'prop-types';
+import ToolBar from './src/components/ToolBar';
 
 
 import brush from './resources/images/brush.png';
@@ -211,6 +212,12 @@ export default class RNSketchCanvas extends React.Component {
     }
     */
   }
+  onColorChange(strokeColor) {
+    this.setState(({ strokeColor: strokeColor, showColorPicker: false }));
+    if (this.state.imageTextCurrent !== null) {
+      this.editText(undefined, undefined, undefined, strokeColor.color);
+    }
+  }
 
   setDrawMode(mode) {
     if (this.state.imageTextCurrent.mode === 'move') {
@@ -227,6 +234,7 @@ export default class RNSketchCanvas extends React.Component {
       }
     }
   }
+
   saveCanvas = () => {
     const filename = String(Math.ceil(Math.random() * 100000000));
     canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
@@ -315,46 +323,6 @@ export default class RNSketchCanvas extends React.Component {
     }
   }
 
-  renderColorItem = ({ item }) => (
-    <TouchableOpacity
-      style={{ marginHorizontal: 2.5 }}
-      onPress={() => { this.setState({ strokeColor: item, showColorPicker: false }); }}
-    >
-      <View style={[{ backgroundColor: item.color, borderWidth: item.border ? 1 : 0 }, styles.strokeColorButton]} />
-    </TouchableOpacity>
-  )
-
-  renderColorBar() {
-    const colors = this.props.strokeColors
-      .map(item => (
-        <TouchableOpacity
-          key={item.color}
-          onPress={() => {
-            this.setState(({ strokeColor: item, showColorPicker: false }));
-            if (this.state.imageTextCurrent !== null) {
-              this.editText(undefined, undefined, undefined, item.color);
-            }
-          }}
-        >
-          <View style={[{ backgroundColor: item.color, borderWidth: item.border ? 1 : 0 }, styles.strokeColorButton]} />
-        </TouchableOpacity>
-      ));
-    return (
-      <View style={[styles.toolBar, styles.toolBarBorder]}>
-        {colors}
-      </View>
-    );
-  }
-
-  renderButton(data) {
-    return (
-      <TouchableOpacity onPress={() => data.onPress()}>
-        <View style={styles.functionButton}>
-          {data.jsx && data.jsx()}
-        </View>
-      </TouchableOpacity>
-    );
-  }
 
   render() {
     // const {
@@ -438,15 +406,15 @@ export default class RNSketchCanvas extends React.Component {
             }
           </View>
           <View style={{ width: '100%', backgroundColor: '#333333' }}>
-            {!!this.state.showColorPicker && this.renderColorBar()}
-            <View style={[styles.toolBar, !this.state.showColorPicker && styles.toolBarBorder]}>
-              {this.renderButton({ jsx: () => <Image source={drawingMode === 'line' ? brushActive : brush} />, onPress: () => this.setDrawMode('line') })}
-              {this.renderButton({ jsx: () => <Image source={drawingMode === 'text' ? titleActive : title} />, onPress: () => this.setDrawMode('text') })}
-              {this.renderButton({ jsx: () => <View style={[{ backgroundColor: color, borderWidth: border ? 1 : 0 }, styles.strokeColorButton]} />, onPress: () => this.setState({ showColorPicker: !this.state.showColorPicker }) })}
-              {this.renderButton({ jsx: () => <Image source={undo} />, onPress: () => this.undoDrawStep() })}
-            </View>
+            <ToolBar
+              onPress={(mode) => this.setDrawMode(mode)}
+              onColorChange={(strokeColor) => this.onColorChange(strokeColor)}
+              onUndo={() => this.undoDrawStep()}
+              showColorPicker={this.state.showColorPicker}
+              strokeColor={this.state.strokeColor}
+              drawingMode={this.state.drawingMode}
+            />
           </View>
-          {false && this.renderDraggable()}
         </SafeAreaView>
       </View>
     );

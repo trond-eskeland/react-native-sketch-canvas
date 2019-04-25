@@ -2,7 +2,7 @@
 
 
 path="example/node_modules/@terrylinla/react-native-sketch-canvas"
-#rm -rf $path
+rm -rf $path
 mkdir -p $path
 
 
