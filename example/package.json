@@ -7,9 +7,10 @@
     "test": "jest"
   },
   "dependencies": {
+    "@terrylinla/react-native-sketch-canvas": "file:..",
     "react": "16.8.3",
     "react-native": "0.57.7",
-    "@terrylinla/react-native-sketch-canvas": "file:.."
+    "react-native-image-picker": "^0.28.1"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",

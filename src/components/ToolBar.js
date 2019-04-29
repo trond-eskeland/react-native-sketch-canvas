@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { Text, View, StyleSheet, Image } from 'react-native';
+import { View, StyleSheet, Image } from 'react-native';
 import Button from '../components/Button';
 import ColorPicker from '../components/ColorPicker';
+import FormPicker from '../components/FormPicker';
 
 import brush from '../../resources/images/brush.png'
 import brushActive from '../../resources/images/brush_active.png';
@@ -9,6 +10,14 @@ import title from '../../resources/images/title.png';
 import titleActive from '../../resources/images/title_active.png';
 import undo from '../../resources/images/undo.png';
 import move from '../../resources/images/move.png';
+import moveActive from '../../resources/images/move_active.png';
+import arrow from '../../resources/images/arrow.png';
+import arrowActive from '../../resources/images/arrow_active.png';
+
+import rectangle from '../../resources/images/rectangle.png';
+import rectangleActive from '../../resources/images/rectangle_active.png';
+import ellipseActive from '../../resources/images/ellipse_active.png';
+import cloudActive from '../../resources/images/cloud_active.png';
 
 const styles = StyleSheet.create({
     toolBar: {
@@ -29,16 +38,37 @@ const styles = StyleSheet.create({
     },
   });
 
-export class ToolBar extends Component {
+class ToolBar extends Component {
 
-   state = {
-    showColorPicker: false,
-   }
+  state = {
+    optionToolbarType: '',
+  }
 
-    onColorChange(strokeColor) {
-        this.setState({ showColorPicker: !this.state.showColorPicker })
-        this.props.onColorChange(strokeColor);
+  renderOptionBar() {
+      switch (this.state.optionToolbarType) {
+        case 'color':
+          return (<ColorPicker onPress={strokeColor => this.props.onColorChange(strokeColor)} />);
+        case 'form':
+          return (<FormPicker drawingMode={this.props.drawingMode} onPress={mode => this.props.onPress(mode)} />);
+        default:
+          break;
+      }
+
+      return null;
+  }
+
+  getFormIcon() {
+    switch (this.props.drawingMode) {
+      case 'form-rectangle':
+        return rectangleActive;
+      case 'form-ellipse':
+        return ellipseActive;
+      case 'form-cloud':
+        return cloudActive;
+      default:
+        return rectangle
     }
+  }
 
   render() {
     const { 
@@ -46,32 +76,33 @@ export class ToolBar extends Component {
         strokeColor,
         onPress,
         onUndo,
-        onColorChange,
-        showColorPicker
     } = this.props;
-
-
 
     return (
         <View style={{ width: '100%', backgroundColor: '#333333' }}>
-            {!!this.state.showColorPicker && <ColorPicker onColorChange={strokeColor => this.onColorChange(strokeColor)} />}
-            <View style={[styles.toolBar, !this.state.showColorPicker && styles.toolBarBorder]}>
+            {this.renderOptionBar()}
+            <View style={[styles.toolBar, !this.state.optionToolbarType && styles.toolBarBorder]}>
+                <Button onPress={() => onPress('zoom')}>
+                    <Image source={drawingMode === 'zoom' ? moveActive : move} />
+                </Button>
                 <Button onPress={() => onPress('line')}>
                     <Image source={drawingMode === 'line' ? brushActive : brush} />
+                </Button>
+                <Button onPress={() => this.setState({ optionToolbarType: this.state.optionToolbarType === 'form' ? '' : 'form' })}>
+                    <Image source={this.getFormIcon()} />
                 </Button>
                 <Button onPress={() => onPress('text')}>
                     <Image source={drawingMode === 'text' ? titleActive : title} />
                 </Button>
-                <Button onPress={() => this.setState({ showColorPicker: !this.state.showColorPicker })}>
+                <Button onPress={() => onPress('arrow')}>
+                    <Image source={drawingMode === 'arrow' ? arrowActive : arrow} />
+                </Button>
+                <Button onPress={() => this.setState({ optionToolbarType: this.state.optionToolbarType === 'color' ? '' : 'color' })}>
                     <View style={[{ backgroundColor: strokeColor.color, borderWidth: strokeColor.border ? 1 : 0 }, styles.strokeColorButton]} />
                 </Button>
                 <Button onPress={() => onUndo()}>
                     <Image source={undo} />
                 </Button>
-              {/* {this.renderButton({ jsx: () => <Image source={drawingMode === 'line' ? brushActive : brush} />, onPress: () => this.setDrawMode('line') })}
-              {this.renderButton({ jsx: () => <Image source={drawingMode === 'text' ? titleActive : title} />, onPress: () => this.setDrawMode('text') })}
-              {this.renderButton({ jsx: () => <View style={[{ backgroundColor: color, borderWidth: border ? 1 : 0 }, styles.strokeColorButton]} />, onPress: () => this.setState({ showColorPicker: !this.state.showColorPicker }) })}
-              {this.renderButton({ jsx: () => <Image source={undo} />, onPress: () => this.undoDrawStep() })} */}
             </View>
         </View>
     );

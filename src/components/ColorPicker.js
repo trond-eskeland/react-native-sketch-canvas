@@ -1,24 +1,11 @@
-/* eslint-disable react/prefer-stateless-function */
 import React, { Component } from 'react';
-import { Text, View, TouchableOpacity, StyleSheet } from 'react-native';
-
+import { View, StyleSheet } from 'react-native';
+import OptionBar from './OptionBar'
+import Button from './Button';
 
 const styles = StyleSheet.create({
-  toolBar: {
-    flexDirection: 'row',
-    width: '100%',
-    backgroundColor: '#FFFFFF',
-    alignItems: 'center',
-    justifyContent: 'space-evenly',
-  },
-  toolBarBorder: {
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderWidth: 0.4,
-    borderBottomWidth: 0,
-  },
   strokeColorButton: {
-      marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
+    marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
   },
 });
 
@@ -36,17 +23,17 @@ export class ColorBar extends Component {
   render() {
     const colors = this.props.strokeColors
       .map(item => (
-        <TouchableOpacity
+        <Button
           key={item.color}
-          onPress={() => this.props.onColorChange(item)}
+          onPress={() => this.props.onPress(item)}
         >
           <View style={[{ backgroundColor: item.color, borderWidth: item.border ? 1 : 0 }, styles.strokeColorButton]} />
-        </TouchableOpacity>
+        </Button>
       ));
     return (
-      <View style={[styles.toolBar, styles.toolBarBorder]}>
+      <OptionBar>
         {colors}
-      </View>
+      </OptionBar>
     );
   }
 }

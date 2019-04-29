@@ -13,17 +13,12 @@ import {
   Dimensions,
   PanResponder,
   Animated,
+  ActivityIndicator,
 } from 'react-native';
 import SketchCanvas from './src/SketchCanvas'
 import PropTypes from 'prop-types';
 import ToolBar from './src/components/ToolBar';
-
-
-import brush from './resources/images/brush.png';
-import brushActive from './resources/images/brush_active.png';
-import title from './resources/images/title.png';
-import titleActive from './resources/images/title_active.png';
-import undo from './resources/images/undo.png';
+import ResponsiveView from './src/components/ResponsiveView';
 import move from './resources/images/move.png';
 
 const styles = StyleSheet.create({
@@ -95,9 +90,13 @@ let canvas = null;
 
 export default class RNSketchCanvas extends React.Component {
   static propTypes = {
+    maxZoom: PropTypes.number,
+		minZoom: PropTypes.number,
+		scrollEnabled: PropTypes.bool,
     strokeColors: PropTypes.arrayOf(PropTypes.shape({ color: PropTypes.string })),
     notificationId: PropTypes.string,
     imageTextDefault: PropTypes.object,
+    requiredTouches: PropTypes.number,
   };
 
   static defaultProps = {
@@ -117,13 +116,19 @@ export default class RNSketchCanvas extends React.Component {
       position: { x: 0, y: 0 },
       mode: 'none',
     },
-    notificationId: '',
+    maxZoom: 1.5,
+		minZoom: 0.2,
+    scrollEnabled: true,
+    requiredTouches: null,
   };
 
 
   constructor(props) {
     super(props);
     this.screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
+
+
+
   }
 
   state = {
@@ -169,6 +174,13 @@ export default class RNSketchCanvas extends React.Component {
         this.state.pan.flattenOffset();
       },
     });
+
+    this.getBackgroundImageSize(this.props.image);
+    if(this.props.image) {
+			//this.getBackgroundImageSize(image);
+		} else {
+			console.warn('did not try to get image ', this.props);
+    }
   }
 
 
@@ -180,8 +192,50 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
+	  if (nextProps.image !== this.props.image)
+    {
+      this.getBackgroundImageSize(nextProps.image);
+    }
+  }
+
+
+  getBackgroundImageSize(path) {
+    if (path) {
+      Image.getSize(path, (width, height) => {
+        this.setState({
+          contentStyle: {
+            height,
+            width,
+          },
+          initialStyle: {
+            height,
+            width,
+          },
+        });
+      });
+    } else {
+      this.setState({
+        contentStyle: {
+          height,
+          width,
+        },
+        initialStyle: {
+          height,
+          width,
+        },
+      });
+    }
 
   }
+
+  renderActivityIndicator() {
+		return (
+			<View style={{ flex: 1, alignSelf: 'center', justifyContent: 'center' }}>
+				<ActivityIndicator size={'large'} />
+			</View>
+		);
+	}
+  
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.imageTextCurrent.mode !== 'edit' && this.state.imageTextCurrent.mode === 'edit') {
@@ -212,6 +266,7 @@ export default class RNSketchCanvas extends React.Component {
     }
     */
   }
+
   onColorChange(strokeColor) {
     this.setState(({ strokeColor: strokeColor, showColorPicker: false }));
     if (this.state.imageTextCurrent !== null) {
@@ -232,6 +287,10 @@ export default class RNSketchCanvas extends React.Component {
         item.mode = 'edit';
         this.setState({ touchEnabled: false, imageTextCurrent: item, drawingMode: mode });
       }
+    } else if (mode.includes('form')) {
+      this.setState({ touchEnabled: false, imageTextCurrent: this.props.imageTextDefault, drawingMode: mode });
+    } else {
+      this.setState({ touchEnabled: false, imageTextCurrent: this.props.imageTextDefault, drawingMode: mode });
     }
   }
 
@@ -323,11 +382,11 @@ export default class RNSketchCanvas extends React.Component {
     }
   }
 
+  updateZoomLevel(zoom) {
+		this.setState({ zoom });
+	}
 
   render() {
-    // const {
-    //   attachment,
-    // } = this.props.navigation.state.params;
     const {
       color,
       border,
@@ -336,25 +395,43 @@ export default class RNSketchCanvas extends React.Component {
       drawingMode,
     } = this.state;
 
-    const file = null; // attachment.uri.replace('file://', '');
+    const file =  this.props.image && this.props.image.uri.replace('file://', ''); // attachment.uri.replace('file://', '');
+    const { maxZoom, minZoom, scrollEnabled, } = this.props;
+
+    
+    // wait for this.getBackgroundImageSize
+    if (!this.state.contentStyle) {
+      return this.renderActivityIndicator();
+    }
 
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior="position">
         <SafeAreaView style={{ flex: 1 }}>
           <View style={{ flex: 1, backgroundColor: '#333333' }}>
-            <SketchCanvas
-              ref={(ref) => { canvas = ref; }}
-              style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 49 }}
-              strokeColor={color}
-              strokeWidth={this.state.strokeWidth}
-              onSketchSaved={(success, path) => this.onSketchSaved(success, path)}
-              text={this.state.imageText}
-              localSourceImage={file && { filename: file, mode: 'AspectFit' }}
-              touchEnabled={this.state.touchEnabled}
-              onDisabledTouch={(x, y) => this.editText(x, y)}
-              onStrokeEnd={() => this.addDrawStep('line')}
-            />
-
+            <ResponsiveView
+              centerContent
+              contentContainerStyle={[styles.scrollViewContainer,]}
+              maxZoomScale={maxZoom}
+              minZoomScale={minZoom}
+              scrollEnabled={scrollEnabled}
+              initialStyle={this.state.initialStyle}
+              updateZoomLevel={this.updateZoomLevel.bind(this)}
+            >
+              <SketchCanvas
+                ref={(ref) => { canvas = ref; }}
+                style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 49 }}
+                strokeColor={color}
+                strokeWidth={this.state.strokeWidth}
+                onSketchSaved={(success, path) => this.onSketchSaved(success, path)}
+                text={this.state.imageText}
+                localSourceImage={file && { filename: file, mode: 'AspectFit' }}
+                touchEnabled={this.state.touchEnabled}
+                onDisabledTouch={(x, y) => this.editText(x, y)}
+                onStrokeEnd={() => this.addDrawStep('line')}
+                requiredTouches={1}
+                scale={this.state.zoom}
+              />
+            </ResponsiveView>
             { this.state.imageTextCurrent.mode === 'edit' &&
             <View style={styles.textEditContainer}>
               <View style={styles.textEditHorizontalContainer}>
@@ -405,7 +482,7 @@ export default class RNSketchCanvas extends React.Component {
               </View>
             }
           </View>
-          <View style={{ width: '100%', backgroundColor: '#333333' }}>
+          <View style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0)' }}>
             <ToolBar
               onPress={(mode) => this.setDrawMode(mode)}
               onColorChange={(strokeColor) => this.onColorChange(strokeColor)}
