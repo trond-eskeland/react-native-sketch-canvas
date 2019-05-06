@@ -14,6 +14,7 @@ import ReactNative, {
 } from 'react-native'
 import { requestPermissions } from './handlePermissions';
 
+
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
   nativeOnly: {
     nativeID: true,
@@ -211,7 +212,6 @@ class SketchCanvas extends React.Component {
   }
 
   componentWillMount() {
-    const requiredToches = 1;
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
       onStartShouldSetPanResponder: (evt, gestureState) => !this.props.requiredTouches || gestureState.numberActiveTouches === this.props.requiredTouches,
@@ -231,7 +231,8 @@ class SketchCanvas extends React.Component {
 		  if (!this.validateDrawingState(evt, gestureState)) return;
 		  if (this._path) {
 			  const x = parseFloat((gestureState.x0 + gestureState.dx / this.props.scale - this._offset.x).toFixed(2)),
-				  y = parseFloat((gestureState.y0 + gestureState.dy / this.props.scale - this._offset.y).toFixed(2))
+          y = parseFloat((gestureState.y0 + gestureState.dy / this.props.scale - this._offset.y).toFixed(2))
+          console.log(`x: ${x}, y: ${y}`);
 			  UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
 				  parseFloat(x * this._screenScale),
 				  parseFloat(y * this._screenScale)

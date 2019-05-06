@@ -313,6 +313,11 @@ export default class RNSketchCanvas extends React.Component {
     const item = Object.assign({}, this.state.imageTextCurrent);
     item.fontSize = 15 * this.screenScale;
     item.mode = 'none';
+    //item.position.x = item.position.x * this.state.zoom
+    // item.position.y = item.position.y * this.state.zoom
+    const x = item.position.x / this.state.zoom;
+    const y = item.position.y / this.state.zoom;
+    console.log(`save text: x: ${x}, y: ${y}`);
 
     const imageText = [...this.state.imageText, item];
     this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, () => callback);

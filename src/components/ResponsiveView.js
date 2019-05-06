@@ -10,7 +10,6 @@ const styles = StyleSheet.create({
 		width: screenWidth,
 		height: screenHeight - (Platform.OS === 'android' ? 80 : 62),
 		backgroundColor: '#FFFFFF',
-		borderWidth: 1,
 
 		overflow: 'hidden',
 		justifyContent: 'center',
@@ -40,7 +39,7 @@ export default class ResponsiveView extends Component {
     this.padding = 0;
   }
   
-  defaultProps = {
+  static defaultProps = {
     maxZoomScale: 2,
     minZoomScale: 0.2,
   };
@@ -81,9 +80,9 @@ export default class ResponsiveView extends Component {
 			onPanResponderMove: (e, gestureState) => {
 				const info = JSON.parse(JSON.stringify(gestureState));
 
-				if (e.nativeEvent?.changedTouches?.length === 2) {
-					const touch1 = e.nativeEvent?.changedTouches[0];
-					const touch2 = e.nativeEvent?.changedTouches[1];
+				if (e.nativeEvent.changedTouches.length === 2) {
+					const touch1 = e.nativeEvent.changedTouches[0];
+					const touch2 = e.nativeEvent.changedTouches[1];
 
 					const distance = this.calcDistance(touch1.locationX, touch1.locationY, touch2.locationX, touch2.locationY);
 					if (this.state.initialDistance) {
@@ -172,11 +171,8 @@ export default class ResponsiveView extends Component {
 	checkBounds(gestureState) {
 		const obj = { x: this.dual.x._value, y: this.dual.y._value };
 		if (this.dual.x._value < -this.$scrollerXBound * this.zoom) obj.x = -this.$scrollerXBound * this.zoom;
-
 		if (this.dual.x._value > this.$scrollerXBound * this.zoom) obj.x = this.$scrollerXBound * this.zoom;
-
 		if (this.dual.y._value < -this.$scrollerYBound * this.zoom) obj.y = -this.$scrollerYBound * this.zoom;
-
 		if (this.dual.y._value > this.$scrollerYBound * this.zoom) obj.y = this.$scrollerYBound * this.zoom;
 
 		Animated.timing(

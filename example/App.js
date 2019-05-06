@@ -53,7 +53,7 @@ export default class App extends Component {
         // const source = { uri: 'data:image/jpeg;base64,' + response.data };
 
         this.setState({
-          img: source,
+          image: source,
         });
       }
     });
@@ -62,6 +62,8 @@ export default class App extends Component {
   render() {
     return (
       <View style={styles.container}>
+        <Button title="load img" onPress={() => this.loadImg()} />
+        <Button title="load img" onPress={() => this.loadImg()} />
         <View style={{ flex: 1, flexDirection: 'row' }}>
           <RNSketchCanvas image={this.state.image} />
         </View>
