@@ -10,7 +10,8 @@
     "@terrylinla/react-native-sketch-canvas": "file:..",
     "react": "16.8.3",
     "react-native": "0.57.7",
-    "react-native-image-picker": "^0.28.1"
+    "react-native-image-picker": "^0.28.1",
+    "react-native-windows": "0.57.1"
   },
   "devDependencies": {
     "@babel/core": "^7.4.3",
@@ -18,7 +19,8 @@
     "babel-jest": "^24.7.1",
     "jest": "^24.7.1",
     "metro-react-native-babel-preset": "^0.53.1",
-    "react-test-renderer": "16.8.3"
+    "react-test-renderer": "16.8.3",
+    "rnpm-plugin-windows": "^0.2.9"
   },
   "jest": {
     "preset": "react-native"
