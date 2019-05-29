@@ -30,6 +30,11 @@ build/
 local.properties
 *.iml
 
+# Windows UWP
+#
+bin/
+obj/
+
 # node.js
 #
 node_modules/

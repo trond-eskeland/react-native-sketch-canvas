@@ -15,7 +15,7 @@ import {
   Animated,
   ActivityIndicator,
 } from 'react-native';
-import SketchCanvas from './src/SketchCanvas'
+import SketchCanvas from './src/SketchCanvas';
 import PropTypes from 'prop-types';
 import ToolBar from './src/components/ToolBar';
 import ResponsiveView from './src/components/ResponsiveView';
@@ -91,12 +91,12 @@ let canvas = null;
 export default class RNSketchCanvas extends React.Component {
   static propTypes = {
     maxZoom: PropTypes.number,
-		minZoom: PropTypes.number,
-		scrollEnabled: PropTypes.bool,
+    minZoom: PropTypes.number,
+    scrollEnabled: PropTypes.bool,
     strokeColors: PropTypes.arrayOf(PropTypes.shape({ color: PropTypes.string })),
-    notificationId: PropTypes.string,
     imageTextDefault: PropTypes.object,
     requiredTouches: PropTypes.number,
+    image: PropTypes.object,
   };
 
   static defaultProps = {
@@ -117,7 +117,7 @@ export default class RNSketchCanvas extends React.Component {
       mode: 'none',
     },
     maxZoom: 1.5,
-		minZoom: 0.2,
+    minZoom: 0.2,
     scrollEnabled: true,
     requiredTouches: null,
   };
@@ -126,9 +126,6 @@ export default class RNSketchCanvas extends React.Component {
   constructor(props) {
     super(props);
     this.screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
-
-
-
   }
 
   state = {
@@ -149,8 +146,7 @@ export default class RNSketchCanvas extends React.Component {
     showColorPicker: false,
     touchEnabled: true,
     drawingMode: 'line',
-    keyboardHeight: height / 2,
-
+    zoomOffset: null,
   }
 
   componentWillMount() {
@@ -175,7 +171,6 @@ export default class RNSketchCanvas extends React.Component {
       },
     });
 
-    this.getBackgroundImageSize(this.props.image);
     if(this.props.image) {
 			//this.getBackgroundImageSize(image);
 		} else {
@@ -185,57 +180,13 @@ export default class RNSketchCanvas extends React.Component {
 
 
   componentDidMount() {
-    this.keyboardDidShowListener = Keyboard.addListener(
-      'keyboardDidShow',
-      this.keyboardDidShow.bind(this),
-    );
   }
 
   componentWillReceiveProps(nextProps) {
-	  if (nextProps.image !== this.props.image)
-    {
-      this.getBackgroundImageSize(nextProps.image);
+    if (nextProps.image !== this.props.image) {
+
     }
   }
-
-
-  getBackgroundImageSize(path) {
-    if (path) {
-      Image.getSize(path, (width, height) => {
-        this.setState({
-          contentStyle: {
-            height,
-            width,
-          },
-          initialStyle: {
-            height,
-            width,
-          },
-        });
-      });
-    } else {
-      this.setState({
-        contentStyle: {
-          height,
-          width,
-        },
-        initialStyle: {
-          height,
-          width,
-        },
-      });
-    }
-
-  }
-
-  renderActivityIndicator() {
-		return (
-			<View style={{ flex: 1, alignSelf: 'center', justifyContent: 'center' }}>
-				<ActivityIndicator size={'large'} />
-			</View>
-		);
-	}
-  
 
   componentDidUpdate(prevProps, prevState) {
     if (prevState.imageTextCurrent.mode !== 'edit' && this.state.imageTextCurrent.mode === 'edit') {
@@ -313,11 +264,17 @@ export default class RNSketchCanvas extends React.Component {
     const item = Object.assign({}, this.state.imageTextCurrent);
     item.fontSize = 15 * this.screenScale;
     item.mode = 'none';
-    //item.position.x = item.position.x * this.state.zoom
-    // item.position.y = item.position.y * this.state.zoom
-    const x = item.position.x / this.state.zoom;
-    const y = item.position.y / this.state.zoom;
-    console.log(`save text: x: ${x}, y: ${y}`);
+
+    let { x, y } = item.position;
+
+    const { zoomOffset } = this.state;
+
+    if (zoomOffset) {
+      x = (x + zoomOffset.horizontalOffset) / zoomOffset.zoomFactor;
+      y = (y + zoomOffset.verticalOffset) / zoomOffset.zoomFactor;
+      item.position.x = x;
+      item.position.y = y;
+    }
 
     const imageText = [...this.state.imageText, item];
     this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, () => callback);
@@ -355,13 +312,9 @@ export default class RNSketchCanvas extends React.Component {
     this.setState({ imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' });
   }
 
-  keyboardDidShow(e) {
-    this.setState({ keyboardHeight: e.endCoordinates.height });
-  }
-
   saveSketch() {
     const filename = String(Math.ceil(Math.random() * 100000000));
-    canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
+    this.canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
   }
 
   addDrawStep(func) {
@@ -388,8 +341,16 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   updateZoomLevel(zoom) {
-		this.setState({ zoom });
-	}
+    this.setState({ zoom });
+  }
+
+  renderSpinner() {
+    return (
+      <View style={{ flex: 1, alignSelf: 'center', justifyContent: 'center' }}>
+        <ActivityIndicator size={'large'} />
+      </View>
+    );
+  }
 
   render() {
     const {
@@ -398,45 +359,35 @@ export default class RNSketchCanvas extends React.Component {
     } = this.state.strokeColor;
     const {
       drawingMode,
+      strokeColor,
+      showColorPicker,
     } = this.state;
 
-    const file =  this.props.image && this.props.image.uri.replace('file://', ''); // attachment.uri.replace('file://', '');
-    const { maxZoom, minZoom, scrollEnabled, } = this.props;
+    const file = this.props.image && this.props.image.uri.replace('file://', '');
 
-    
-    // wait for this.getBackgroundImageSize
     if (!this.state.contentStyle) {
-      return this.renderActivityIndicator();
+      // return this.renderSpinner();
     }
 
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior="position">
         <SafeAreaView style={{ flex: 1 }}>
           <View style={{ flex: 1, backgroundColor: '#333333' }}>
-            <ResponsiveView
-              centerContent
-              contentContainerStyle={[styles.scrollViewContainer,]}
-              maxZoomScale={maxZoom}
-              minZoomScale={minZoom}
-              scrollEnabled={scrollEnabled}
-              initialStyle={this.state.initialStyle}
-              updateZoomLevel={this.updateZoomLevel.bind(this)}
-            >
-              <SketchCanvas
-                ref={(ref) => { canvas = ref; }}
-                style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 49 }}
-                strokeColor={color}
-                strokeWidth={this.state.strokeWidth}
-                onSketchSaved={(success, path) => this.onSketchSaved(success, path)}
-                text={this.state.imageText}
-                localSourceImage={file && { filename: file, mode: 'AspectFit' }}
-                touchEnabled={this.state.touchEnabled}
-                onDisabledTouch={(x, y) => this.editText(x, y)}
-                onStrokeEnd={() => this.addDrawStep('line')}
-                requiredTouches={1}
-                scale={this.state.zoom}
-              />
-            </ResponsiveView>
+            <SketchCanvas
+              ref={(ref) => { canvas = ref; }}
+              style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 49 }}
+              strokeColor={color}
+              strokeWidth={this.state.strokeWidth}
+              onSketchSaved={(success, path) => this.onSketchSaved(success, path)}
+              text={this.state.imageText}
+              localSourceImage={file && { filename: file, mode: 'AspectFit' }}
+              touchEnabled={this.state.touchEnabled}
+              onDisabledTouch={(x, y) => this.editText(x, y)}
+              onStrokeEnd={() => this.addDrawStep('line')}
+              onZoomChange={zoomOffset => this.setState({ zoomOffset })}
+              requiredTouches={1}
+              scale={this.state.zoom}
+            />
             { this.state.imageTextCurrent.mode === 'edit' &&
             <View style={styles.textEditContainer}>
               <View style={styles.textEditHorizontalContainer}>
@@ -489,26 +440,23 @@ export default class RNSketchCanvas extends React.Component {
           </View>
           <View style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0)' }}>
             <ToolBar
-              onPress={(mode) => this.setDrawMode(mode)}
-              onColorChange={(strokeColor) => this.onColorChange(strokeColor)}
+              onPress={mode => this.setDrawMode(mode)}
+              onColorChange={color=> this.onColorChange(color)}
               onUndo={() => this.undoDrawStep()}
-              showColorPicker={this.state.showColorPicker}
-              strokeColor={this.state.strokeColor}
-              drawingMode={this.state.drawingMode}
+              showColorPicker={showColorPicker}
+              strokeColor={strokeColor}
+              drawingMode={drawingMode}
             />
           </View>
         </SafeAreaView>
       </View>
     );
   }
-
-};
+}
 
 RNSketchCanvas.MAIN_BUNDLE = SketchCanvas.MAIN_BUNDLE;
 RNSketchCanvas.DOCUMENT = SketchCanvas.DOCUMENT;
 RNSketchCanvas.LIBRARY = SketchCanvas.LIBRARY;
 RNSketchCanvas.CACHES = SketchCanvas.CACHES;
 
-export {
-  SketchCanvas
-}
+export { SketchCanvas };

@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,9 +31,6 @@ namespace RNSketchCanvas.Model
             this.text = json["text"].Value<string>();
             this.fontColor = json["fontColor"].Value<uint>();
             this.fontSize = json["fontSize"].Value<int>();
-
-            var test = json["position"].ToObject<Model.Point>();
-
         }
 
         public string text { get; set; }
