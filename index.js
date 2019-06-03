@@ -171,7 +171,7 @@ export default class RNSketchCanvas extends React.Component {
       },
     });
 
-    if(this.props.image) {
+    if (this.props.image) {
 			//this.getBackgroundImageSize(image);
 		} else {
 			console.warn('did not try to get image ', this.props);
@@ -195,7 +195,6 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   componentWillUnmount() {
-    this.keyboardDidShowListener.remove();
     this.state.pan.x.removeAllListeners();
     this.state.pan.y.removeAllListeners();
   }
@@ -219,7 +218,7 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   onColorChange(strokeColor) {
-    this.setState(({ strokeColor: strokeColor, showColorPicker: false }));
+    this.setState(({ strokeColor, showColorPicker: false }));
     if (this.state.imageTextCurrent !== null) {
       this.editText(undefined, undefined, undefined, strokeColor.color);
     }
@@ -248,7 +247,6 @@ export default class RNSketchCanvas extends React.Component {
   saveCanvas = () => {
     const filename = String(Math.ceil(Math.random() * 100000000));
     canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
-    //this.props.navigation.goBack();
   };
 
 
@@ -363,11 +361,16 @@ export default class RNSketchCanvas extends React.Component {
       showColorPicker,
     } = this.state;
 
+
+    const zoomFactor = this.state.zoomOffset ? this.state.zoomOffset.zoomFactor : 1;
+
     const file = this.props.image && this.props.image.uri.replace('file://', '');
 
     if (!this.state.contentStyle) {
       // return this.renderSpinner();
     }
+
+    
 
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior="position">
@@ -375,7 +378,7 @@ export default class RNSketchCanvas extends React.Component {
           <View style={{ flex: 1, backgroundColor: '#333333' }}>
             <SketchCanvas
               ref={(ref) => { canvas = ref; }}
-              style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 49 }}
+              style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 39 }}
               strokeColor={color}
               strokeWidth={this.state.strokeWidth}
               onSketchSaved={(success, path) => this.onSketchSaved(success, path)}
@@ -427,7 +430,7 @@ export default class RNSketchCanvas extends React.Component {
                     style={{
                       backgroundColor: 'rgba(0,0,0,0.1)',
                       color: this.state.imageTextCurrent.fontColor,
-                      fontSize: this.state.imageTextCurrent.fontSize,
+                      fontSize: this.state.imageTextCurrent.fontSize * zoomFactor,
                       padding: 5,
                     }}
                     multiline
@@ -441,7 +444,7 @@ export default class RNSketchCanvas extends React.Component {
           <View style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0)' }}>
             <ToolBar
               onPress={mode => this.setDrawMode(mode)}
-              onColorChange={color=> this.onColorChange(color)}
+              onColorChange={selectedColor => this.onColorChange(selectedColor)}
               onUndo={() => this.undoDrawStep()}
               showColorPicker={showColorPicker}
               strokeColor={strokeColor}
