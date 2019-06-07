@@ -116,6 +116,10 @@ namespace RNSketchCanvas
                 case Commands.endPath:
                     view.end();
                     break;
+                case Commands.lockViewPort:
+                    var enabled = args[0].Value<bool>();
+                    view.lockViewPort(enabled);
+                    break;
                 default:
                     break;
             }
@@ -132,6 +136,7 @@ namespace RNSketchCanvas
             deletePath = 5,
             save = 6,
             endPath = 7,
+            lockViewPort = 8,
         }
 
         public override IReadOnlyDictionary<string, object> CommandsMap => new Dictionary<string, object> {
@@ -142,6 +147,7 @@ namespace RNSketchCanvas
             {  Commands.deletePath.ToString(), (int)Commands.deletePath },
             {  Commands.save.ToString(), (int)Commands.save },
             {  Commands.endPath.ToString(), (int)Commands.endPath },
+            {  Commands.lockViewPort.ToString(), (int)Commands.lockViewPort },
         };
     }
 }

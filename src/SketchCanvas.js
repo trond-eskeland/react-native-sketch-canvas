@@ -179,6 +179,7 @@ class SketchCanvas extends React.Component {
     })
   }
 
+
   clear() {
     this._paths = []
     this._path = null
@@ -226,6 +227,10 @@ class SketchCanvas extends React.Component {
     } else {
       NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback)
     }
+  }
+
+  lockViewPort(enabled) {
+    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.lockViewPort, [enabled]);
   }
 
   _processText(text) {

@@ -16,9 +16,15 @@ namespace RNSketchCanvas
         private double horizontalOffset;
         private double verticalOffset;
 
-        public SketchCanvasZoomChangedEvent(int viewTag, float zoomFactor, double horizontalOffset, double verticalOffset) : base(viewTag)
+        private double screenImageRatioWidth;
+        private double screenImageRatioHeight;
+
+        public SketchCanvasZoomChangedEvent(int viewTag, float zoomFactor, double screenImageRatioWidth, double screenImageRatioHeight, double horizontalOffset, double verticalOffset) : base(viewTag)
         {
             this.zoomFactor = zoomFactor;
+            this.screenImageRatioWidth = screenImageRatioWidth;
+            this.screenImageRatioHeight = screenImageRatioHeight;
+
             this.horizontalOffset = horizontalOffset;
             this.verticalOffset = verticalOffset;
         }
@@ -31,6 +37,8 @@ namespace RNSketchCanvas
             var zoomOffset = new JObject
             {
                 { "zoomFactor", zoomFactor },
+                { "screenImageRatioWidth", screenImageRatioWidth },
+                { "screenImageRatioHeight", screenImageRatioHeight },
                 { "horizontalOffset", horizontalOffset },
                 { "verticalOffset", verticalOffset },
             };

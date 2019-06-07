@@ -51,6 +51,11 @@ namespace RNSketchCanvas
             scrollView.Content = image;
 
 
+            scrollView.PointerMoved += ScrollView_PointerMoved;
+
+
+            scrollView.ManipulationMode = Windows.UI.Xaml.Input.ManipulationModes.All;
+
 
             scrollView.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (s, e) =>
             {
@@ -78,6 +83,31 @@ namespace RNSketchCanvas
 
         }
 
+        private void ScrollView_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine(e.Pointer.ToString());
+
+            //DependencyObject depObj = (DependencyObject)e.OriginalSource;
+
+            //if (InDisableScrollViewerRegion(e.GetCurrentPoint(this)))
+            //{
+            //    DisableScrolling((DependencyObject)e.OriginalSource);
+            //}
+
+            UIElement a = e.OriginalSource as UIElement;
+
+            UIElement target = sender as UIElement;
+
+            //PointerPoint point = e.GetCurrentPoint(itemFlipView);
+            //gestureRecognizer.ProcessDownEvent(point);
+
+            
+            a.CapturePointer(e.Pointer);
+            e.Handled = true;
+
+
+        }
+
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("img loaded");
@@ -86,11 +116,16 @@ namespace RNSketchCanvas
         private void dispatchZoomEvent()
         {
 
-            var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth ?
-            (int)((this.Width - this.bitmap.PixelWidth) / 2) : 0;
 
-            var aspectOffsetVertical = this.Height > this.bitmap.PixelHeight ?
-            (int)((this.Height - this.bitmap.PixelHeight) / 2) : 0;
+
+
+            var screenImageRatioWidth = this.bitmap.PixelWidth / this.image.ActualWidth;
+            var screenImageRatioHeight = this.bitmap.PixelHeight / this.image.ActualHeight;
+
+            var horizontalOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
+            var verticalOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
+
+            var zoom = scrollView.ZoomFactor;
 
             this.GetReactContext()
               .GetNativeModule<UIManagerModule>()
@@ -98,9 +133,28 @@ namespace RNSketchCanvas
               .DispatchEvent(
                   new SketchCanvasZoomChangedEvent(
                       this.GetTag(),
-                      scrollView.ZoomFactor,
-                       scrollView.HorizontalOffset + aspectOffsetHorizontal,
-                       scrollView.VerticalOffset + aspectOffsetVertical));
+                        zoom,
+                        screenImageRatioWidth,
+                        screenImageRatioHeight,
+                        horizontalOffset,
+                        verticalOffset));
+
+
+            //var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth ?
+            //(int)((this.Width - this.bitmap.PixelWidth) / 2) : 0;
+
+            //var aspectOffsetVertical = this.Height > this.bitmap.PixelHeight ?
+            //(int)((this.Height - this.bitmap.PixelHeight) / 2) : 0;
+
+            //this.GetReactContext()
+            //  .GetNativeModule<UIManagerModule>()
+            //  .EventDispatcher
+            //  .DispatchEvent(
+            //      new SketchCanvasZoomChangedEvent(
+            //          this.GetTag(),
+            //          scrollView.ZoomFactor,
+            //           scrollView.HorizontalOffset + aspectOffsetHorizontal,
+            //           scrollView.VerticalOffset + aspectOffsetVertical));
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -228,28 +282,25 @@ namespace RNSketchCanvas
         public Model.Point getAbsolutePoint(Model.Point canvasPoint)
         {
             var screenImageRatioWidth = this.bitmap.PixelWidth / this.image.ActualWidth;
-
             var screenImageRatioHeight = this.bitmap.PixelHeight / this.image.ActualHeight;
 
-            var ratio = this.bitmap.PixelWidth / this.bitmap.PixelWidth;
+            var HorizontalOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
+            var VerticalOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
 
-            var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth && scrollView.HorizontalOffset == 0 ?
-                (int)(((this.Width - this.bitmap.PixelWidth) / 2) - (scrollView.VerticalOffset * ratio) - scrollView.VerticalOffset) : 0;
+
+
+            //var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth && scrollView.HorizontalOffset == 0 ?
+            //    (int)(((this.Width - this.bitmap.PixelWidth) / 2) - (scrollView.VerticalOffset * ratio) - scrollView.VerticalOffset) : 0;
 
             //var aspectOffsetVertical = this.Height > this.bitmap.PixelHeight && scrollView.VerticalOffset == 0 ?
             //    (int)((this.Height - this.bitmap.PixelHeight) / 2) : 0;
 
             var zoom = scrollView.ZoomFactor;
 
-            //var xFactor = (int)((screenImageRatioWidth + (scrollView.HorizontalOffset * screenImageRatioWidth)) / zoom);
-            //var yFactor = (int)((screenImageRatioHeight + (scrollView.VerticalOffset * screenImageRatioHeight)) / zoom);
-
-            //var zoomPoint = new Model.Point((int)(canvasPoint.x * screenImageRatioWidth), (int)(canvasPoint.y * screenImageRatioHeight));
-
             var zoomPoint = new Model.Point(
 
-              (int)(((canvasPoint.x * screenImageRatioWidth) + (scrollView.HorizontalOffset * screenImageRatioWidth) - aspectOffsetHorizontal) / zoom),
-              (int)(((canvasPoint.y * screenImageRatioHeight) + (scrollView.VerticalOffset * screenImageRatioHeight)) / zoom)
+              (int)(((canvasPoint.x * screenImageRatioWidth) + HorizontalOffset) / zoom),
+              (int)(((canvasPoint.y * screenImageRatioHeight) + VerticalOffset) / zoom)
 
             );
 
@@ -450,6 +501,12 @@ namespace RNSketchCanvas
             //return BitmapFactory.New((int)this.Width, (int)this.Height);
         }
 
+        public void lockViewPort(bool enabled)
+        {
+            scrollView.VerticalScrollMode = enabled ? ScrollMode.Enabled : ScrollMode.Disabled;
+            scrollView.HorizontalScrollMode = enabled ? ScrollMode.Enabled : ScrollMode.Disabled;
+        }
+
         private async void reDraw()
         {
 
@@ -512,7 +569,7 @@ namespace RNSketchCanvas
                     //  scrollView.MinZoomFactor = 1.0f;
                     //  scrollView.ChangeView(null, null, zoomFactor);
 
-                    
+
 
                     var period = TimeSpan.FromMilliseconds(10);
                     Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
@@ -522,16 +579,15 @@ namespace RNSketchCanvas
 
                             //var offset = (this.Width - image.ActualWidth) / 2;
 
-                          //  var _ratioWidth = scrollView.ViewportWidth / image.ActualWidth;
-                          //  var _ratioHeight = scrollView.ViewportHeight / image.ActualHeight;
-                          //  var _zoomFactor = (_ratioWidth >= 1 && _ratioHeight >= 1)
-                          //? 1F
-                          //: (float)(Math.Min(_ratioWidth, _ratioHeight));
-       
+                            //  var _ratioWidth = scrollView.ViewportWidth / image.ActualWidth;
+                            //  var _ratioHeight = scrollView.ViewportHeight / image.ActualHeight;
+                            //  var _zoomFactor = (_ratioWidth >= 1 && _ratioHeight >= 1)
+                            //? 1F
+                            //: (float)(Math.Min(_ratioWidth, _ratioHeight));
+
 
 
                             scrollView.MinZoomFactor = 2.0f; //zoomFactor; // 1.61051f
-
 
                             var Succes = scrollView.ChangeView(null, null, 0.2f, false);
                         });
@@ -539,7 +595,7 @@ namespace RNSketchCanvas
 
                 }
 
-                
+
 
             });
 

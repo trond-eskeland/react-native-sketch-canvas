@@ -172,6 +172,7 @@ export default class RNSketchCanvas extends React.Component<RNSketchCanvasProps 
   save(): void
   nextStrokeWidth(): void
   getBase64(): void
+  lockViewPort(): void
 
   static MAIN_BUNDLE: string
   static DOCUMENT: string

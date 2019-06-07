@@ -97,6 +97,7 @@ export default class RNSketchCanvas extends React.Component {
     imageTextDefault: PropTypes.object,
     requiredTouches: PropTypes.number,
     image: PropTypes.object,
+    onSketchSaved: PropTypes.func,
   };
 
   static defaultProps = {
@@ -120,6 +121,7 @@ export default class RNSketchCanvas extends React.Component {
     minZoom: 0.2,
     scrollEnabled: true,
     requiredTouches: null,
+    onSketchSaved: () => {},
   };
 
 
@@ -231,6 +233,7 @@ export default class RNSketchCanvas extends React.Component {
 
     if (mode === 'line') {
       this.setState({ touchEnabled: true, imageTextCurrent: this.props.imageTextDefault, drawingMode: mode });
+      canvas.lockViewPort(false);
     } else if (mode === 'text') {
       if (this.state.imageTextCurrent.mode !== 'move') {
         const item = Object.assign({}, this.state.imageTextCurrent);
@@ -240,7 +243,8 @@ export default class RNSketchCanvas extends React.Component {
     } else if (mode.includes('form')) {
       this.setState({ touchEnabled: false, imageTextCurrent: this.props.imageTextDefault, drawingMode: mode });
     } else {
-      this.setState({ touchEnabled: false, imageTextCurrent: this.props.imageTextDefault, drawingMode: mode });
+      this.setState({ touchEnabled: true, imageTextCurrent: this.props.imageTextDefault, drawingMode: mode });
+      canvas.lockViewPort(true);
     }
   }
 
@@ -249,6 +253,10 @@ export default class RNSketchCanvas extends React.Component {
     canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
   };
 
+  save() {
+    const filename = String(Math.ceil(Math.random() * 100000000));
+    canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
+  }
 
   confim() {
     if (this.state.imageTextCurrent.mode === 'move') {
@@ -268,8 +276,8 @@ export default class RNSketchCanvas extends React.Component {
     const { zoomOffset } = this.state;
 
     if (zoomOffset) {
-      x = (x + zoomOffset.horizontalOffset) / zoomOffset.zoomFactor;
-      y = (y + zoomOffset.verticalOffset) / zoomOffset.zoomFactor;
+      x = ((x * zoomOffset.screenImageRatioWidth) + zoomOffset.horizontalOffset) / zoomOffset.zoomFactor;
+      y = ((y * zoomOffset.screenImageRatioHeight) + zoomOffset.verticalOffset) / zoomOffset.zoomFactor;
       item.position.x = x;
       item.position.y = y;
     }
@@ -359,18 +367,18 @@ export default class RNSketchCanvas extends React.Component {
       drawingMode,
       strokeColor,
       showColorPicker,
+      zoomOffset,
     } = this.state;
 
-
-    const zoomFactor = this.state.zoomOffset ? this.state.zoomOffset.zoomFactor : 1;
+    const fontSize = zoomOffset ?
+      ((this.state.imageTextCurrent.fontSize * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
+      : 15;
 
     const file = this.props.image && this.props.image.uri.replace('file://', '');
 
     if (!this.state.contentStyle) {
       // return this.renderSpinner();
     }
-
-    
 
     return (
       <View style={{ flex: 1, backgroundColor: '#FFFFFF' }} behavior="position">
@@ -381,7 +389,7 @@ export default class RNSketchCanvas extends React.Component {
               style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 39 }}
               strokeColor={color}
               strokeWidth={this.state.strokeWidth}
-              onSketchSaved={(success, path) => this.onSketchSaved(success, path)}
+              onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
               text={this.state.imageText}
               localSourceImage={file && { filename: file, mode: 'AspectFit' }}
               touchEnabled={this.state.touchEnabled}
@@ -430,7 +438,7 @@ export default class RNSketchCanvas extends React.Component {
                     style={{
                       backgroundColor: 'rgba(0,0,0,0.1)',
                       color: this.state.imageTextCurrent.fontColor,
-                      fontSize: this.state.imageTextCurrent.fontSize * zoomFactor,
+                      fontSize: fontSize,
                       padding: 5,
                     }}
                     multiline
