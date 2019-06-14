@@ -258,9 +258,9 @@ export default class RNSketchCanvas extends React.Component {
     canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
   }
 
-  confim() {
+  confirm() {
     if (this.state.imageTextCurrent.mode === 'move') {
-      this.saveText(this.saveCanvas.bind(this));
+      this.saveText(() => this.save());
     } else {
       this.saveCanvas();
     }
@@ -283,7 +283,7 @@ export default class RNSketchCanvas extends React.Component {
     }
 
     const imageText = [...this.state.imageText, item];
-    this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, () => callback);
+    this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, () => callback());
     this.addDrawStep('text');
   }
 
