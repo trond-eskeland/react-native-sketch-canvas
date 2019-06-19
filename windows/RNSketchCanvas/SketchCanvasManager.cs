@@ -90,6 +90,7 @@ namespace RNSketchCanvas
                     var strokeWidth = args[2].Value<float>();
 
                     view.newPath(id, color, (int)strokeWidth);
+                    Debug.WriteLine("new path");
                     break;
                 case Commands.clear:
                     view.clear();

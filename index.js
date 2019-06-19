@@ -174,9 +174,9 @@ export default class RNSketchCanvas extends React.Component {
     });
 
     if (this.props.image) {
-			//this.getBackgroundImageSize(image);
-		} else {
-			console.warn('did not try to get image ', this.props);
+      // this.getBackgroundImageSize(image);
+    } else {
+      console.warn('did not try to get image ', this.props);
     }
   }
 
@@ -185,9 +185,6 @@ export default class RNSketchCanvas extends React.Component {
   }
 
   componentWillReceiveProps(nextProps) {
-    if (nextProps.image !== this.props.image) {
-
-    }
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -199,24 +196,6 @@ export default class RNSketchCanvas extends React.Component {
   componentWillUnmount() {
     this.state.pan.x.removeAllListeners();
     this.state.pan.y.removeAllListeners();
-  }
-
-  onSketchSaved(success, path) {
-    /*
-    const {
-      attachment,
-      notificationId,
-      onAddAttachment,
-    } = this.props.navigation.state.params;
-
-    if (success) {
-      const uri = `file://${path}`;
-      const sketchAttachment = Object.assign({}, attachment);
-      sketchAttachment.uri = uri;
-
-      onAddAttachment({ notificationId, attachment: sketchAttachment });
-    }
-    */
   }
 
   onColorChange(strokeColor) {
@@ -253,14 +232,9 @@ export default class RNSketchCanvas extends React.Component {
     canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
   };
 
-  save() {
-    const filename = String(Math.ceil(Math.random() * 100000000));
-    canvas.save('jpg', true, 'Documents/attachments', `${filename}.jpg`, true, true, false);
-  }
-
   confirm() {
     if (this.state.imageTextCurrent.mode === 'move') {
-      this.saveText(() => this.save());
+      this.saveText(() => this.saveCanvas());
     } else {
       this.saveCanvas();
     }
