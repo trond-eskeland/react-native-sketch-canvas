@@ -42,6 +42,8 @@ namespace RNSketchCanvas
         public ThemedReactContext Context { get; set; }
 
         private ScrollViewer scrollView = new ScrollViewer();
+
+        public bool viewPortLocked { get; set; } = true;
         public SketchCanvas(ThemedReactContext Context)
         {
             this.Context = Context;
@@ -54,14 +56,14 @@ namespace RNSketchCanvas
             scrollView.Content = image;
 
 
-
+            viewPortLocked = true;
 
 
 
 
             scrollView.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (s, e) =>
             {
-                Debug.WriteLine($"zoom: {scrollView.ZoomFactor}");
+                // Debug.WriteLine($"zoom: {scrollView.ZoomFactor}");
                 dispatchZoomEvent();
             });
             scrollView.RegisterPropertyChangedCallback(ScrollViewer.VerticalOffsetProperty, (s, e) =>
@@ -80,19 +82,9 @@ namespace RNSketchCanvas
             });
 
 
-
-            //scrollView.PointerMoved += ScrollView_PointerMoved;
-
-
-            //scrollView.ManipulationMode = Windows.UI.Xaml.Input.ManipulationModes.System;
-
             scrollView.DirectManipulationStarted += ScrollView_DirectManipulationStarted;
             scrollView.DirectManipulationCompleted += ScrollView_DirectManipulationCompleted;
 
-
-            //image.PointerMoved += Image_PointerMoved;
-
-            // scrollView.AddHandler(UIElement.PointerMovedEvent, new PointerEventHandler(OnPointerMoved), true);
 
             var _pointerHandlers = new Dictionary<RoutedEvent, PointerEventHandler>()
             {
@@ -113,178 +105,49 @@ namespace RNSketchCanvas
 
             }
 
-            //scrollView.PointerMoved += ScrollView_PointerMoved1;
-
-            //scrollView.ManipulationDelta += ScrollView_ManipulationDelta;
-
-
-            // var touchHandler = new ReactNative.Touch.TouchHandler(this);
-
-            // scrollView.AddHandler(UIElement.p, new PointerEventHandler(test_PointerPressed), true);
-
-
-            //scrollView.CancelDirectManipulations();
-
-            //scrollView.AddHandler(UIElement.PointerPressedEvent, new PointerEventHandler(myScrollViewer_PointerPressed), true /*handledEventsToo*/);
-            //scrollView.AddHandler(UIElement.PointerReleasedEvent, new PointerEventHandler(myScrollViewer_PointerReleased), true /*handledEventsToo*/);
-            //scrollView.AddHandler(UIElement.PointerCanceledEvent, new PointerEventHandler(myScrollViewer_PointerCanceled), true /*handledEventsToo*/);
-
-
-
-
-
-
             this.Children.Add(scrollView);
 
-
-
-
-
         }
-        //private void test_PointerPressed(object sender, PointerRoutedEventArgs e)
-        //{
-        //    //var viewPoint = e.GetCurrentPoint(scrollView);
-        //    //Debug.WriteLine(viewPoint.Position.ToString());
-        //}
-
-
-        //private void myScrollViewer_PointerPressed(object sender, PointerRoutedEventArgs e)
-        //{
-        //    if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen)
-        //    {
-        //        (this as UIElement).ManipulationMode &= ~ManipulationModes.System;
-        //    }
-        //}
-        //private void myScrollViewer_PointerReleased(object sender, PointerRoutedEventArgs e)
-        //{
-        //    if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen)
-        //    {
-        //        (this as UIElement).ManipulationMode |= ManipulationModes.System;
-        //    }
-        //}
-        //private void myScrollViewer_PointerCanceled(object sender, PointerRoutedEventArgs e)
-        //{
-        //    if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen)
-        //    {
-        //        (this as UIElement).ManipulationMode |= ManipulationModes.System;
-        //    }
-        //}
-
-        //private void Image_PointerMoved(object sender, PointerRoutedEventArgs e)
-        //{
-
-        //    var viewPoint = e.GetCurrentPoint(scrollView);
-        //    Debug.WriteLine(viewPoint.Position.ToString());
-        //}
-
-        //private void ScrollView_ManipulationDelta(object sender, ManipulationDeltaRoutedEventArgs e)
-        //{
-
-        //    var test = e.Velocities;
-
-        //    Debug.WriteLine(e.Position.ToString());
-
-        //    //var viewPoint = e.GetCurrentPoint(scrollView);
-        //    //Debug.WriteLine(viewPoint.Position.ToString());
-        //}
-
-        //private void ScrollView_PointerMoved1(object sender, PointerRoutedEventArgs e)
-        //{
-        //    var viewPoint = e.GetCurrentPoint(scrollView);
-        //    Debug.WriteLine(viewPoint.Position.ToString());
-        //}
 
         private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
             //this.OnPointerPressed(this, e);
 
 
-            var viewPoint = e.GetCurrentPoint(scrollView);
-            Debug.WriteLine(viewPoint.Position.ToString());
+            //var viewPoint = e.GetCurrentPoint(scrollView);
+            //Debug.WriteLine(viewPoint.Position.ToString());
         }
 
 
-        //uint lastPointerId = 0;
 
-        //PointerPoint lastPointerPoint;
+        public Model.Point lastPoint { get; set; }
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
+            var viewPoint = e.GetCurrentPoint(scrollView);
 
-
-            
-            
-            if (mCurrentPath != null)
+            if (mCurrentPath != null
+                && !viewPortLocked
+                && viewPoint.PointerId != 2
+                && (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch
+                     || e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen))
             {
-                var viewPoint = e.GetCurrentPoint(scrollView);
-                Debug.WriteLine(viewPoint.Position.ToString());
+
+                var point = new Model.Point((int)viewPoint.Position.X, (int)viewPoint.Position.Y);
 
 
-                addPoint(new Model.Point((int)viewPoint.Position.X, (int)viewPoint.Position.Y));
+
+
+                if ((lastPoint == null || !lastPoint.Equals(point)) && viewPoint.Properties.IsPrimary)
+                {
+                    Debug.WriteLine($"add point: x:{viewPoint.Position.X}, y:{viewPoint.Position.Y}, poinderId: {viewPoint.PointerId}, raw-x:{viewPoint.RawPosition.X}, raw-y:{viewPoint.RawPosition.Y} ");
+                    addPoint(point);
+                    lastPoint = point;
+
+                }
+
+
             }
 
-            //if (lastPointerPoint != null)
-            //{
-
-               
-            //    //Debug.WriteLine(viewPoint.Position.ToString());
-
-
-
-            //    var touches = new JArray();
-
-            //    var pointer = RNHelper.CreateReactPointer(this, viewPoint, e, true);
-
-            //    touches.Add(JObject.FromObject(lastPointerPoint));
-            //    touches.Add(JObject.FromObject(pointer));
-
-            //    //foreach (var pointer in activePointers)
-            //    //{
-            //    //    touches.Add(JObject.FromObject(pointer));
-            //    //}
-
-            //    var changedIndices = new JArray
-            //    {
-            //        1
-            //    };
-
-            //    // var coalescingKey = activePointers[pointerIndex].PointerId;
-
-            //    var touchEvent = new TouchEvent(TouchEventType.Move, touches, changedIndices, e.Pointer.PointerId);
-
-
-            //    this.GetReactContext()
-            //        .GetNativeModule<UIManagerModule>()
-            //        .EventDispatcher
-            //        .DispatchEvent(touchEvent);
-
-               
-            //}
-            //lastPointerPoint = viewPoint;
-
-            //if (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch)
-            //{
-
-
-            //}
-
-
-
-            //e.Handled = true;
-
-            //var g =  this.GetReactContext()
-            //.GetNativeModule<UIManagerModule>();
-
-
-
-            //  if (lastPointerId != e.Pointer.PointerId)
-            //  {
-
-
-
-            //      this.OnPointerMoved(this, e);
-            //  }
-
-            //  lastPointerId = e.Pointer.PointerId;
         }
 
         private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
@@ -305,12 +168,6 @@ namespace RNSketchCanvas
             end();
         }
 
-        private void OnPointerConcluded(TouchEventType touchEventType, PointerRoutedEventArgs e)
-        {
-            Debug.WriteLine("OnPointerConcluded");
-            end();
-        }
-
         private void OnPointerExited(object sender, PointerRoutedEventArgs e)
         {
             Debug.WriteLine("OnPointerExited");
@@ -324,44 +181,19 @@ namespace RNSketchCanvas
 
         private void ScrollView_DirectManipulationStarted(object sender, object e)
         {
-            scrollView.CancelDirectManipulations();
-            Debug.WriteLine("ScrollView_DirectManipulationStarted");
+            if (!viewPortLocked)
+            {
+                scrollView.CancelDirectManipulations();
+                Debug.WriteLine("ScrollView_DirectManipulationStarted");
+            }
+
         }
 
         private void ScrollView_DirectManipulationCompleted(object sender, object e)
         {
             Debug.WriteLine("ScrollView_DirectManipulationCompleted");
+            // this.end();
         }
-
-
-        private void ScrollView_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
-        {
-            //Debug.WriteLine(e.Pointer.ToString());
-
-            ////DependencyObject depObj = (DependencyObject)e.OriginalSource;
-
-            ////if (InDisableScrollViewerRegion(e.GetCurrentPoint(this)))
-            ////{
-            ////    DisableScrolling((DependencyObject)e.OriginalSource);
-            ////}
-
-            //UIElement a = e.OriginalSource as UIElement;
-
-            //UIElement target = sender as UIElement;
-
-            ////PointerPoint point = e.GetCurrentPoint(itemFlipView);
-            ////gestureRecognizer.ProcessDownEvent(point);
-
-
-            //a.CapturePointer(e.Pointer);
-            //e.Handled = true;
-
-
-
-            // DispatchTouchEvent(TouchEventType.Move, _pointers, pointerIndex);
-
-        }
-
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
         {
@@ -393,23 +225,6 @@ namespace RNSketchCanvas
                         screenImageRatioHeight,
                         horizontalOffset,
                         verticalOffset));
-
-
-            //var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth ?
-            //(int)((this.Width - this.bitmap.PixelWidth) / 2) : 0;
-
-            //var aspectOffsetVertical = this.Height > this.bitmap.PixelHeight ?
-            //(int)((this.Height - this.bitmap.PixelHeight) / 2) : 0;
-
-            //this.GetReactContext()
-            //  .GetNativeModule<UIManagerModule>()
-            //  .EventDispatcher
-            //  .DispatchEvent(
-            //      new SketchCanvasZoomChangedEvent(
-            //          this.GetTag(),
-            //          scrollView.ZoomFactor,
-            //           scrollView.HorizontalOffset + aspectOffsetHorizontal,
-            //           scrollView.VerticalOffset + aspectOffsetVertical));
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -631,10 +446,16 @@ namespace RNSketchCanvas
 
         public void deletePath(int id)
         {
+            var count = mPaths.Count;
             var item = mPaths.Where(x => x.id == id).FirstOrDefault();
             if (item != null)
             {
                 mPaths.Remove(item);
+                reDraw();
+            }
+            else if (count > 0)
+            {
+                mPaths.RemoveAt(count - 1);
                 reDraw();
             }
         }
@@ -758,10 +579,12 @@ namespace RNSketchCanvas
 
         public void lockViewPort(bool enabled)
         {
+            this.viewPortLocked = enabled;
             scrollView.VerticalScrollMode = enabled ? ScrollMode.Enabled : ScrollMode.Disabled;
             scrollView.HorizontalScrollMode = enabled ? ScrollMode.Enabled : ScrollMode.Disabled;
 
             scrollView.ManipulationMode = enabled ? ManipulationModes.TranslateY : ManipulationModes.TranslateY;
+            end();
         }
 
         private async void reDraw()

@@ -90,14 +90,14 @@ namespace RNSketchCanvas
                     var strokeWidth = args[2].Value<float>();
 
                     view.newPath(id, color, (int)strokeWidth);
-                    Debug.WriteLine("new path");
+                    // Debug.WriteLine("new path from react");
                     break;
                 case Commands.clear:
                     view.clear();
                     break;
                 case Commands.addPath:
                     //fixme
-                    view.addPath(0, 0, 0, new List<Model.Point>());
+                    //view.addPath(0, 0, 0, new List<Model.Point>());
                     break;
                 case Commands.deletePath:
                     id = args[0].Value<int>();
@@ -125,7 +125,7 @@ namespace RNSketchCanvas
                     break;
             }
 
-            Debug.WriteLine(((Commands)commandId).ToString());
+            // Debug.WriteLine("react command;" + ((Commands)commandId).ToString());
         }
 
         private enum Commands

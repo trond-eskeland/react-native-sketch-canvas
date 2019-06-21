@@ -130,7 +130,6 @@
     <Compile Include="SketchCanvas.cs" />
     <Compile Include="SketchCanvasZoomChangedEvent.cs" />
     <Compile Include="SketchData.cs" />
-    <Compile Include="TouchEvent.cs" />
     <Compile Include="UIBlock.cs" />
     <EmbeddedResource Include="Properties\RNSketchCanvas.rd.xml" />
   </ItemGroup>

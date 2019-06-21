@@ -1,4 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +27,14 @@ namespace RNSketchCanvas.Model
 
         public int x { get; set; }
         public int y { get; set; }
+
+        public override bool Equals(object obj)
+        {
+            var compareObj = (Point)obj;
+
+            return this.x == compareObj.x && this.y == compareObj.y;
+        }
+
 
     }
 }

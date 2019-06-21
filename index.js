@@ -147,7 +147,7 @@ export default class RNSketchCanvas extends React.Component {
     drawStep: [],
     showColorPicker: false,
     touchEnabled: true,
-    drawingMode: 'line',
+    drawingMode: 'zoom',
     zoomOffset: null,
   }
 
@@ -257,7 +257,7 @@ export default class RNSketchCanvas extends React.Component {
     }
 
     const imageText = [...this.state.imageText, item];
-    this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, () => callback());
+    this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, callback ? () => callback() : () => null);
     this.addDrawStep('text');
   }
 
@@ -317,6 +317,8 @@ export default class RNSketchCanvas extends React.Component {
         this.undoText();
       }
       this.setState({ drawStep: items });
+    } else {
+      canvas.undo();
     }
   }
 
