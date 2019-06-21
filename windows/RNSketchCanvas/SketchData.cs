@@ -197,53 +197,54 @@ namespace RNSketchCanvas
                 return;
             }
 
-            Debug.WriteLine("points:" + pointsCount);
+            // Debug.WriteLine("points:" + pointsCount);
 
-            if (pointsCount >= 3 && pointIndex >= 2)
+            //if (pointsCount >= 3 && pointIndex >= 2)
+            //{
+            //    //Point c = points[pointIndex - 2];
+            //    Point a = points[pointIndex - 1];
+            //    Point b = points[pointIndex];
+            //    Debug.WriteLine($"draw line 3 pt point: {pointIndex}, {pointIndex - 1}");
+
+            //    //canvas.DrawLineBresenham(a.x, a.y, b.x, b.y, (int)strokeColor);
+            //    canvas.DrawLinePenned(a.x, a.y, b.x, b.y, this.getPaint());
+
+            //    //
+            //    // Summary:
+            //    //     Draws a Cardinal spline (cubic) defined by a point collection. The cardinal spline
+            //    //     passes through each point in the collection.
+            //    //
+            //    // Parameters:
+            //    //   bmp:
+            //    //     The WriteableBitmap.
+            //    //
+            //    //   points:
+            //    //     The points for the curve in x and y pairs, therefore the array is interpreted
+            //    //     as (x1, y1, x2, y2, x3, y3, x4, y4, x1, x2 ..., xn, yn).
+            //    //
+            //    //   tension:
+            //    //     The tension of the curve defines the shape. Usually between 0 and 1. 0 would
+            //    //     be a straight line.
+            //    //
+            //    //   color:
+            //    //     The color for the spline.
+
+
+            //    //canvas.DrawCurve(new int[] { a.x, a.y, b.x, b.y, c.x, c.y }, 1, (int)strokeColor);
+
+            //}
+            if (pointsCount >= 2 && pointIndex >= 1)
             {
-                //Point c = points[pointIndex - 2];
                 Point a = points[pointIndex - 1];
                 Point b = points[pointIndex];
-                Debug.WriteLine($"draw line 3 pt point: {pointIndex}, {pointIndex - 1}");
-
-                //canvas.DrawLineBresenham(a.x, a.y, b.x, b.y, (int)strokeColor);
-                canvas.DrawLinePenned(a.x, a.y, b.x, b.y, this.getPaint());
-
-                //
-                // Summary:
-                //     Draws a Cardinal spline (cubic) defined by a point collection. The cardinal spline
-                //     passes through each point in the collection.
-                //
-                // Parameters:
-                //   bmp:
-                //     The WriteableBitmap.
-                //
-                //   points:
-                //     The points for the curve in x and y pairs, therefore the array is interpreted
-                //     as (x1, y1, x2, y2, x3, y3, x4, y4, x1, x2 ..., xn, yn).
-                //
-                //   tension:
-                //     The tension of the curve defines the shape. Usually between 0 and 1. 0 would
-                //     be a straight line.
-                //
-                //   color:
-                //     The color for the spline.
-
-
-                //canvas.DrawCurve(new int[] { a.x, a.y, b.x, b.y, c.x, c.y }, 1, (int)strokeColor);
-
-            }
-            else if (pointsCount >= 2 && pointIndex >= 1)
-            {
-                Point a = points[pointIndex - 1];
-                Point b = points[pointIndex];
-                Debug.WriteLine("draw line");
+                // Debug.WriteLine("draw line");
+                // Debug.WriteLine($"Draw from {a.x}:{a.y} to {b.x}:{b.y}");
                 canvas.DrawLinePenned(a.x, a.y, b.x, b.y, this.getPaint());
             }
             else if (pointsCount >= 1)
             {
                 Point a = points[pointIndex];
-                Debug.WriteLine("draw dot");
+                // Debug.WriteLine("draw dot");
                 canvas.FillEllipse(a.x, a.y, 5, 5, Color.FromArgb(255, 0, 255, 255));
             }
 

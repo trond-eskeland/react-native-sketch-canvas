@@ -23,6 +23,9 @@ using Newtonsoft.Json.Linq;
 using System.Diagnostics;
 using Newtonsoft.Json;
 using Windows.UI.Xaml;
+using ReactNative.Views.Scroll;
+using Windows.UI.Xaml.Input;
+using Windows.UI.Input;
 
 namespace RNSketchCanvas
 {
@@ -39,6 +42,8 @@ namespace RNSketchCanvas
         public ThemedReactContext Context { get; set; }
 
         private ScrollViewer scrollView = new ScrollViewer();
+
+        public bool viewPortLocked { get; set; } = true;
         public SketchCanvas(ThemedReactContext Context)
         {
             this.Context = Context;
@@ -51,15 +56,14 @@ namespace RNSketchCanvas
             scrollView.Content = image;
 
 
-            scrollView.PointerMoved += ScrollView_PointerMoved;
+            viewPortLocked = true;
 
 
-            scrollView.ManipulationMode = Windows.UI.Xaml.Input.ManipulationModes.All;
 
 
             scrollView.RegisterPropertyChangedCallback(ScrollViewer.ZoomFactorProperty, (s, e) =>
             {
-                Debug.WriteLine($"zoom: {scrollView.ZoomFactor}");
+                // Debug.WriteLine($"zoom: {scrollView.ZoomFactor}");
                 dispatchZoomEvent();
             });
             scrollView.RegisterPropertyChangedCallback(ScrollViewer.VerticalOffsetProperty, (s, e) =>
@@ -78,34 +82,117 @@ namespace RNSketchCanvas
             });
 
 
-            this.Children.Add(scrollView);
+            scrollView.DirectManipulationStarted += ScrollView_DirectManipulationStarted;
+            scrollView.DirectManipulationCompleted += ScrollView_DirectManipulationCompleted;
 
+
+            var _pointerHandlers = new Dictionary<RoutedEvent, PointerEventHandler>()
+            {
+                { UIElement.PointerPressedEvent, new PointerEventHandler(OnPointerPressed) },
+                { UIElement.PointerMovedEvent, new PointerEventHandler(OnPointerMoved) },
+                { UIElement.PointerReleasedEvent, new PointerEventHandler(OnPointerReleased) },
+                { UIElement.PointerCanceledEvent, new PointerEventHandler(OnPointerCanceled) },
+                { UIElement.PointerCaptureLostEvent, new PointerEventHandler(OnPointerCaptureLost) },
+                { UIElement.PointerExitedEvent, new PointerEventHandler(OnPointerExited) },
+            };
+
+            var _pointersInViews = new Dictionary<uint, HashSet<DependencyObject>>();
+
+            foreach (KeyValuePair<RoutedEvent, PointerEventHandler> handler in _pointerHandlers)
+            {
+                scrollView.AddHandler(handler.Key, handler.Value, true);
+
+
+            }
+
+            this.Children.Add(scrollView);
 
         }
 
-        private void ScrollView_PointerMoved(object sender, Windows.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
         {
-            Debug.WriteLine(e.Pointer.ToString());
-
-            //DependencyObject depObj = (DependencyObject)e.OriginalSource;
-
-            //if (InDisableScrollViewerRegion(e.GetCurrentPoint(this)))
-            //{
-            //    DisableScrolling((DependencyObject)e.OriginalSource);
-            //}
-
-            UIElement a = e.OriginalSource as UIElement;
-
-            UIElement target = sender as UIElement;
-
-            //PointerPoint point = e.GetCurrentPoint(itemFlipView);
-            //gestureRecognizer.ProcessDownEvent(point);
-
-            
-            a.CapturePointer(e.Pointer);
-            e.Handled = true;
+            //this.OnPointerPressed(this, e);
 
 
+            //var viewPoint = e.GetCurrentPoint(scrollView);
+            //Debug.WriteLine(viewPoint.Position.ToString());
+        }
+
+
+
+        public Model.Point lastPoint { get; set; }
+        private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+        {
+            var viewPoint = e.GetCurrentPoint(scrollView);
+
+            if (mCurrentPath != null
+                && !viewPortLocked
+                && viewPoint.PointerId != 2
+                && (e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Touch
+                     || e.Pointer.PointerDeviceType == Windows.Devices.Input.PointerDeviceType.Pen))
+            {
+
+                var point = new Model.Point((int)viewPoint.Position.X, (int)viewPoint.Position.Y);
+
+
+
+
+                if ((lastPoint == null || !lastPoint.Equals(point)) && viewPoint.Properties.IsPrimary)
+                {
+                    Debug.WriteLine($"add point: x:{viewPoint.Position.X}, y:{viewPoint.Position.Y}, poinderId: {viewPoint.PointerId}, raw-x:{viewPoint.RawPosition.X}, raw-y:{viewPoint.RawPosition.Y} ");
+                    addPoint(point);
+                    lastPoint = point;
+
+                }
+
+
+            }
+
+        }
+
+        private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("OnPointerReleased");
+            end();
+        }
+
+        private void OnPointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("OnPointerCanceled");
+            end();
+        }
+
+        private void OnPointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("OnPointerCaptureLost");
+            end();
+        }
+
+        private void OnPointerExited(object sender, PointerRoutedEventArgs e)
+        {
+            Debug.WriteLine("OnPointerExited");
+            end();
+
+        }
+
+
+
+
+
+        private void ScrollView_DirectManipulationStarted(object sender, object e)
+        {
+            if (!viewPortLocked)
+            {
+                scrollView.CancelDirectManipulations();
+                Debug.WriteLine("ScrollView_DirectManipulationStarted");
+            }
+
+        }
+
+        private void ScrollView_DirectManipulationCompleted(object sender, object e)
+        {
+            Debug.WriteLine("ScrollView_DirectManipulationCompleted");
+            // this.end();
         }
 
         private void Image_Loaded(object sender, RoutedEventArgs e)
@@ -138,23 +225,6 @@ namespace RNSketchCanvas
                         screenImageRatioHeight,
                         horizontalOffset,
                         verticalOffset));
-
-
-            //var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth ?
-            //(int)((this.Width - this.bitmap.PixelWidth) / 2) : 0;
-
-            //var aspectOffsetVertical = this.Height > this.bitmap.PixelHeight ?
-            //(int)((this.Height - this.bitmap.PixelHeight) / 2) : 0;
-
-            //this.GetReactContext()
-            //  .GetNativeModule<UIManagerModule>()
-            //  .EventDispatcher
-            //  .DispatchEvent(
-            //      new SketchCanvasZoomChangedEvent(
-            //          this.GetTag(),
-            //          scrollView.ZoomFactor,
-            //           scrollView.HorizontalOffset + aspectOffsetHorizontal,
-            //           scrollView.VerticalOffset + aspectOffsetVertical));
         }
 
         protected override Size MeasureOverride(Size availableSize)
@@ -376,10 +446,16 @@ namespace RNSketchCanvas
 
         public void deletePath(int id)
         {
+            var count = mPaths.Count;
             var item = mPaths.Where(x => x.id == id).FirstOrDefault();
             if (item != null)
             {
                 mPaths.Remove(item);
+                reDraw();
+            }
+            else if (count > 0)
+            {
+                mPaths.RemoveAt(count - 1);
                 reDraw();
             }
         }
@@ -503,8 +579,12 @@ namespace RNSketchCanvas
 
         public void lockViewPort(bool enabled)
         {
+            this.viewPortLocked = enabled;
             scrollView.VerticalScrollMode = enabled ? ScrollMode.Enabled : ScrollMode.Disabled;
             scrollView.HorizontalScrollMode = enabled ? ScrollMode.Enabled : ScrollMode.Disabled;
+
+            scrollView.ManipulationMode = enabled ? ManipulationModes.TranslateY : ManipulationModes.TranslateY;
+            end();
         }
 
         private async void reDraw()
@@ -602,5 +682,7 @@ namespace RNSketchCanvas
         }
 
     }
+
+
 }
 
