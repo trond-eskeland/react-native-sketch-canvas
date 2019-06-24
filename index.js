@@ -346,6 +346,10 @@ export default class RNSketchCanvas extends React.Component {
       zoomOffset,
     } = this.state;
 
+    const {
+      showArrows,
+      showForms,
+    } = this.props;
     const fontSize = zoomOffset ?
       ((this.state.imageTextCurrent.fontSize * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
       : 15;
@@ -433,6 +437,8 @@ export default class RNSketchCanvas extends React.Component {
               showColorPicker={showColorPicker}
               strokeColor={strokeColor}
               drawingMode={drawingMode}
+              showArrows={showArrows}
+              showForms={showForms}
             />
           </View>
         </SafeAreaView>

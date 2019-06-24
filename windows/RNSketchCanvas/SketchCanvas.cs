@@ -284,6 +284,7 @@ namespace RNSketchCanvas
                     mBackgroundImage = this.ResizedImage(mBackgroundImage, (int)this.Width, (int)this.Height, mode, WriteableBitmapExtensions.Interpolation.Bilinear);
                     restult = true;
                 }
+                mPaths.Clear();
 
             }
             catch (Exception)

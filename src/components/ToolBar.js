@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
+import PropTypes from 'prop-types';
 import Button from '../components/Button';
 import ColorPicker from '../components/ColorPicker';
 import FormPicker from '../components/FormPicker';
@@ -39,6 +40,21 @@ const styles = StyleSheet.create({
 });
 
 class ToolBar extends Component {
+
+  static propTypes = {
+    drawingMode: PropTypes.string.isRequired,
+    strokeColor: PropTypes.object.isRequired,
+    onPress: PropTypes.func.isRequired,
+    onUndo: PropTypes.func.isRequired,
+    onColorChange: PropTypes.func.isRequired,
+    showArrows: PropTypes.bool,
+    showForms: PropTypes.bool,
+  };
+
+  static defaultProps = {
+    showArrows: true,
+    showForms: true,
+  };
 
   state = {
     optionToolbarType: '',
@@ -86,11 +102,13 @@ class ToolBar extends Component {
   }
 
   render() {
-    const { 
+    const {
       drawingMode,
       strokeColor,
       onPress,
       onUndo,
+      showArrows,
+      showForms,
     } = this.props;
 
     return (
@@ -103,15 +121,19 @@ class ToolBar extends Component {
           <Button onPress={() => onPress('line')}>
             <Image source={drawingMode === 'line' ? brushActive : brush} />
           </Button>
+          { showForms &&
           <Button onPress={() => this.setState({ optionToolbarType: this.state.optionToolbarType === 'form' ? '' : 'form' })}>
             <Image source={this.getFormIcon()} />
           </Button>
+          }
           <Button onPress={() => onPress('text')}>
             <Image source={drawingMode === 'text' ? titleActive : title} />
           </Button>
+          { showArrows &&
           <Button onPress={() => onPress('arrow')}>
             <Image source={drawingMode === 'arrow' ? arrowActive : arrow} />
           </Button>
+          }
           <Button onPress={() => this.setState({ optionToolbarType: this.state.optionToolbarType === 'color' ? '' : 'color' })}>
             <View style={[{ backgroundColor: strokeColor.color, borderWidth: strokeColor.border ? 1 : 0 }, styles.strokeColorButton]} />
           </Button>
