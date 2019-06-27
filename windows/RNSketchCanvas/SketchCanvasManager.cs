@@ -37,7 +37,14 @@ namespace RNSketchCanvas
         {
             view.onSizeChanged((int)dimensions.Width, (int)dimensions.Height, (int)this.Canvas.Width, (int)this.Canvas.Height);
             base.SetDimensions(view, dimensions);
-           
+
+        }
+
+        [ReactProp("strokeColor")]
+        public void StrokeColor(SketchCanvas view, JValue options)
+        {
+            uint color = options.Value<uint>();
+            view.color = color;
         }
 
         [ReactProp("localSourceImage")]
@@ -90,7 +97,6 @@ namespace RNSketchCanvas
                     var strokeWidth = args[2].Value<float>();
 
                     view.newPath(id, color, (int)strokeWidth);
-                    // Debug.WriteLine("new path from react");
                     break;
                 case Commands.clear:
                     view.clear();

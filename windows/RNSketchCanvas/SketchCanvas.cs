@@ -39,6 +39,8 @@ namespace RNSketchCanvas
         private SketchData mCurrentPath = null;
         private StackPanel stack = new StackPanel() { HorizontalAlignment = Windows.UI.Xaml.HorizontalAlignment.Center, VerticalAlignment = Windows.UI.Xaml.VerticalAlignment.Center };
         private Image image = new Image() { Name = "img" };
+        public uint color { get; set; }
+        public Model.Point lastPoint { get; set; }
         public ThemedReactContext Context { get; set; }
 
         private ScrollViewer scrollView = new ScrollViewer();
@@ -120,7 +122,6 @@ namespace RNSketchCanvas
 
 
 
-        public Model.Point lastPoint { get; set; }
         private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
         {
             var viewPoint = e.GetCurrentPoint(scrollView);
@@ -139,7 +140,7 @@ namespace RNSketchCanvas
 
                 if ((lastPoint == null || !lastPoint.Equals(point)) && viewPoint.Properties.IsPrimary)
                 {
-                    Debug.WriteLine($"add point: x:{viewPoint.Position.X}, y:{viewPoint.Position.Y}, poinderId: {viewPoint.PointerId}, raw-x:{viewPoint.RawPosition.X}, raw-y:{viewPoint.RawPosition.Y} ");
+                    // Debug.WriteLine($"add point: x:{viewPoint.Position.X}, y:{viewPoint.Position.Y}, poinderId: {viewPoint.PointerId}, raw-x:{viewPoint.RawPosition.X}, raw-y:{viewPoint.RawPosition.Y} ");
                     addPoint(point);
                     lastPoint = point;
 
@@ -183,6 +184,7 @@ namespace RNSketchCanvas
         {
             if (!viewPortLocked)
             {
+                mPaths.Clear();
                 scrollView.CancelDirectManipulations();
                 Debug.WriteLine("ScrollView_DirectManipulationStarted");
             }

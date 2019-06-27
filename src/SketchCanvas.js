@@ -1,3 +1,4 @@
+/* eslint-disable no-underscore-dangle */
 'use strict';
 
 import React from 'react'
@@ -78,22 +79,23 @@ class SketchCanvas extends React.Component {
     permissionDialogMessage: '',
   };
 
-  state = {
-    text: null
-  }
 
   constructor(props) {
-    super(props)
-    this._pathsToProcess = []
-    this._paths = []
-    this._path = null
-    this._handle = null
-    this._screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get()
-    this._offset = { x: 0, y: 0 }
-    this._size = { width: 0, height: 0 }
-    this._initialized = false
+    super(props);
+    this._pathsToProcess = [];
+    this._paths = [];
+    this._path = null;
+    this._handle = null;
+    this._screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
+    this._offset = { x: 0, y: 0 };
+    this._size = { width: 0, height: 0 };
+    this._initialized = false;
 
-    this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null)
+    this.state.text = this._processText(props.text ? props.text.map(t => Object.assign({}, t)) : null);
+  }
+
+  state = {
+    text: null,
   }
 
   componentWillMount() {
@@ -106,15 +108,17 @@ class SketchCanvas extends React.Component {
 
       onPanResponderGrant: (evt, gestureState) => {
         // if (!this.props.touchEnabled) return
-        const e = evt.nativeEvent
-        this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY }
-        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2))
-        const y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2))
+        const e = evt.nativeEvent;
+        this._offset = { x: e.pageX - e.locationX, y: e.pageY - e.locationY };
+        const x = parseFloat((gestureState.x0 - this._offset.x).toFixed(2));
+        const y = parseFloat((gestureState.y0 - this._offset.y).toFixed(2));
 
         if (this.props.touchEnabled) {
           this._path = {
-            id: parseInt(Math.random() * 100000000), color: this.props.strokeColor,
-            width: this.props.strokeWidth, data: []
+            id: parseInt(Math.random() * 100000000),
+            color: this.props.strokeColor,
+            width: this.props.strokeWidth,
+            data: [],
           }
           UIManager.dispatchViewManagerCommand(
             this._handle,
@@ -122,7 +126,7 @@ class SketchCanvas extends React.Component {
             [
               this._path.id,
               processColor(this._path.color),
-              this._path.width * this._screenScale
+              this._path.width * this._screenScale,
             ]
           )
           UIManager.dispatchViewManagerCommand(
@@ -133,13 +137,11 @@ class SketchCanvas extends React.Component {
               parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
             ]
           )
-          this._path.data.push(`${x},${y}`)
-          this.props.onStrokeStart(x, y)
+          this._path.data.push(`${x},${y}`);
+          this.props.onStrokeStart(x, y);
         } else {
-          this.props.onDisabledTouch(x, y)
+          this.props.onDisabledTouch(x, y);
         }
-
-        
       },
       onPanResponderMove: (evt, gestureState) => {
         // if (!this.props.touchEnabled) return
@@ -150,16 +152,15 @@ class SketchCanvas extends React.Component {
           if (this.props.touchEnabled) { 
             UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
               parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-              parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale)
-            ])
-            
-            this._path.data.push(`${x},${y}`)
-            this.props.onStrokeChanged(x, y)
+              parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale),
+            ]);
+            this._path.data.push(`${x},${y}`);
+            this.props.onStrokeChanged(x, y);
           }
         }
       },
       onPanResponderRelease: (evt, gestureState) => {
-        if (!this.props.touchEnabled) return
+        if (!this.props.touchEnabled) return;
         if (this._path) {
           this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user })
           this._paths.push({ path: this._path, size: this._size, drawer: this.props.user })
@@ -276,6 +277,7 @@ class SketchCanvas extends React.Component {
             this.props.onSketchSaved(e.nativeEvent.success)
           }
         }}
+        strokeColor={processColor(this.props.strokeColor)}
         localSourceImage={this.props.localSourceImage}
         permissionDialogTitle={this.props.permissionDialogTitle}
         permissionDialogMessage={this.props.permissionDialogMessage}
