@@ -211,18 +211,23 @@ namespace RNSketchCanvas
 
             var screen = DisplayInformation.GetForCurrentView();
 
-            var scale = (int)screen.ResolutionScale / 100;
+            var scale = (float)screen.ResolutionScale / 100;
 
-            var screenImageRatioWidth = (this.bitmap.PixelWidth / this.image.ActualWidth) / scale;
-            var screenImageRatioHeight = (this.bitmap.PixelHeight / this.image.ActualHeight) / scale;
+            var screenImageRatioWidth = (this.bitmap.PixelWidth / this.image.ActualWidth);
+            var screenImageRatioHeight = (this.bitmap.PixelHeight / this.image.ActualHeight);
 
-            var horizontalOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
+            var w = this.Width;
+            var h = this.Height;
+
+            var horizontalOffset = (scrollView.HorizontalOffset * screenImageRatioWidth); // 100; //((scrollView.ExtentWidth - this.Width)) - (((scrollView.ExtentWidth - this.Width)) * 2); //(
             var verticalOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
+
+            var zoom = scrollView.ZoomFactor;
+            // Debug.WriteLine($"scale: {scale}, widthRatio: {screenImageRatioWidth}, heightRatio: {screenImageRatioHeight}, actualWidth: {image.Width}, actualHeight: {image.Height} ");
 
             if (this.bitmap.PixelWidth == 1)
                 return;
 
-            var zoom = scrollView.ZoomFactor;
 
             this.GetReactContext()
               .GetNativeModule<UIManagerModule>()

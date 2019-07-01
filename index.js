@@ -127,7 +127,7 @@ export default class RNSketchCanvas extends React.Component {
 
   constructor(props) {
     super(props);
-    this.screenScale = Platform.OS === 'ios' ? 1 : PixelRatio.get();
+    this.screenScale = Platform.OS === 'android' ? PixelRatio.get() : 1;
   }
 
   state = {
@@ -248,6 +248,8 @@ export default class RNSketchCanvas extends React.Component {
     let { x, y } = item.position;
 
     const { zoomOffset } = this.state;
+
+    console.log('zoomOffset', zoomOffset);
 
     if (zoomOffset) {
       x = ((x * zoomOffset.screenImageRatioWidth) + zoomOffset.horizontalOffset) / zoomOffset.zoomFactor;
