@@ -375,7 +375,9 @@ export default class RNSketchCanvas extends React.Component {
               touchEnabled={this.state.touchEnabled}
               onDisabledTouch={(x, y) => this.editText(x, y)}
               onStrokeEnd={() => this.addDrawStep('line')}
-              onZoomChange={zoomOffset => this.setState({ zoomOffset })}
+              onZoomChange={(zoomOffset) => {
+                this.setState({ zoomOffset });
+              }}
               requiredTouches={1}
               scale={this.state.zoom}
             />

@@ -83,7 +83,6 @@ namespace RNSketchCanvas
                 scrollView.ChangeView(0, 0, null);
             });
 
-
             scrollView.DirectManipulationStarted += ScrollView_DirectManipulationStarted;
             scrollView.DirectManipulationCompleted += ScrollView_DirectManipulationCompleted;
 
@@ -186,7 +185,6 @@ namespace RNSketchCanvas
             {
                 if (mCurrentPath != null)
                     mCurrentPath.points.Clear();
-                // mPaths.Clear();
                 scrollView.CancelDirectManipulations();
                 Debug.WriteLine("ScrollView_DirectManipulationStarted");
             }
@@ -210,11 +208,18 @@ namespace RNSketchCanvas
 
 
 
-            var screenImageRatioWidth = this.bitmap.PixelWidth / this.image.ActualWidth;
-            var screenImageRatioHeight = this.bitmap.PixelHeight / this.image.ActualHeight;
+            var screen = DisplayInformation.GetForCurrentView();
+
+            var scale = (int)screen.ResolutionScale / 100;
+
+            var screenImageRatioWidth = (this.bitmap.PixelWidth / this.image.ActualWidth) / scale;
+            var screenImageRatioHeight = (this.bitmap.PixelHeight / this.image.ActualHeight) / scale;
 
             var horizontalOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
             var verticalOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
+
+            if (this.bitmap.PixelWidth == 1)
+                return;
 
             var zoom = scrollView.ZoomFactor;
 
@@ -537,7 +542,7 @@ namespace RNSketchCanvas
 
             if (this.Width > 0 && this.Height > 0)
             {
-                return mBackgroundImage != null ? mBackgroundImage.Clone() : BitmapFactory.New((int)this.Width * 5, (int)this.Height * 5);
+                return mBackgroundImage != null ? mBackgroundImage.Clone() : BitmapFactory.New((int)1, (int)1);
             }
 
             return null;
@@ -557,12 +562,10 @@ namespace RNSketchCanvas
         private async void reDraw()
         {
 
-            //this.UpdateLayout();
-
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
             () =>
             {
-                var bitmapWasNull = bitmap == null;
+                var bitmapWasNull = mBackgroundImage == null;
                 bitmap = createImage(false, false, false, false);
 
                 try
@@ -593,44 +596,13 @@ namespace RNSketchCanvas
                 this.image.Source = bitmap;
 
 
-                if (bitmapWasNull && bitmap != null)
+                if (bitmap != null && bitmap.PixelWidth != 1)
                 {
-                    //  var ratioWidth = scrollView.ViewportWidth / image.ActualWidth;
-                    //  var ratioHeight = scrollView.ViewportHeight / image.ActualHeight;
-                    //  var zoomFactor = (ratioWidth >= 1 && ratioHeight >= 1)
-                    //? 1F
-                    //: (float)(Math.Min(ratioWidth, ratioHeight));
-                    //  scrollView.MinZoomFactor = zoomFactor;
-                    //  scrollView.ChangeView(null, null, zoomFactor);
 
-
-                    //this.image.MaxWidth = bitmap.PixelWidth;
-                    //this.image.MaxHeight = bitmap.PixelHeight;
-
-                    //test 2
-                    //  var ratioWidth = scrollView.ViewportWidth / bitmap.PixelWidth;
-                    //  var ratioHeight = scrollView.ViewportHeight / bitmap.PixelHeight;
-                    //  var zoomFactor = (ratioWidth >= 1 && ratioHeight >= 1)
-                    //? 1F
-                    //: (float)(Math.Min(ratioWidth, ratioHeight));
-                    //  scrollView.MinZoomFactor = 1.0f;
-                    //  scrollView.ChangeView(null, null, zoomFactor);
-
-
-
-                    var period = TimeSpan.FromMilliseconds(10);
                     Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
                     {
                         await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
                         {
-
-                            //var offset = (this.Width - image.ActualWidth) / 2;
-
-                            //  var _ratioWidth = scrollView.ViewportWidth / image.ActualWidth;
-                            //  var _ratioHeight = scrollView.ViewportHeight / image.ActualHeight;
-                            //  var _zoomFactor = (_ratioWidth >= 1 && _ratioHeight >= 1)
-                            //? 1F
-                            //: (float)(Math.Min(_ratioWidth, _ratioHeight));
 
 
 
@@ -638,7 +610,7 @@ namespace RNSketchCanvas
 
                             var Succes = scrollView.ChangeView(null, null, 0.2f, false);
                         });
-                    }, period);
+                    }, TimeSpan.FromMilliseconds(10));
 
                 }
 
