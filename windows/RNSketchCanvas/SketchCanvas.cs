@@ -184,7 +184,9 @@ namespace RNSketchCanvas
         {
             if (!viewPortLocked)
             {
-                mPaths.Clear();
+                if (mCurrentPath != null)
+                    mCurrentPath.points.Clear();
+                // mPaths.Clear();
                 scrollView.CancelDirectManipulations();
                 Debug.WriteLine("ScrollView_DirectManipulationStarted");
             }
@@ -382,64 +384,26 @@ namespace RNSketchCanvas
 
         public void addPoint(Model.Point point)
         {
-
-            /*
-             *  working with full zoom out and zoom in (not when centered in middle)
-             
-             var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth && scrollView.HorizontalOffset == 0 ?
-                (int)(((this.Width - this.bitmap.PixelWidth) / 2) - (scrollView.VerticalOffset * ratio) - scrollView.VerticalOffset) : 0;
-
-
-            var zoom = scrollView.ZoomFactor;
-            var zoomPoint = new Model.Point
-              ((int)((point.x + scrollView.HorizontalOffset - aspectOffsetHorizontal) / zoom),
-              (int)((point.y + scrollView.VerticalOffset / screenImageRatioH) / zoom)
-
-              );
-             * 
-             * 
-             */
-
-            //var screenImageRatioWidth = this.bitmap.PixelWidth / this.image.ActualWidth;
-
-            //var screenImageRatioHeight = this.bitmap.PixelHeight / this.image.ActualHeight;
-
-            //var ratio = this.bitmap.PixelWidth / this.bitmap.PixelWidth;
-
-            //var aspectOffsetHorizontal = this.Width > this.bitmap.PixelWidth && scrollView.HorizontalOffset == 0 ?
-            //    (int)(((this.Width - this.bitmap.PixelWidth) / 2) - (scrollView.VerticalOffset * ratio) - scrollView.VerticalOffset) : 0;
-
-            ////var aspectOffsetVertical = this.Height > this.bitmap.PixelHeight && scrollView.VerticalOffset == 0 ?
-            ////    (int)((this.Height - this.bitmap.PixelHeight) / 2) : 0;
-
-            //var zoom = scrollView.ZoomFactor;
-            //var zoomPoint = new Model.Point(
-
-            //  (int)(((point.x * screenImageRatioWidth) + (scrollView.HorizontalOffset * screenImageRatioWidth) - aspectOffsetHorizontal) / zoom),
-            //  (int)(((point.y * screenImageRatioHeight) + (scrollView.VerticalOffset * screenImageRatioHeight)) / zoom)
-
-            //);
-
-
-            //Debug.WriteLine($"ratio: {ratio}, aspectOffsetHorizontal: {aspectOffsetHorizontal}, scrollView.HorizontalOffset: {scrollView.HorizontalOffset}, scrollView.VerticalOffset: {scrollView.VerticalOffset}");
-            //Debug.WriteLine($"zoomFactor: {zoom}, point x: {point.x}, point y: {point.y}, calc x: {zoomPoint.x}, calc y: {zoomPoint.y}");
-
-            var zoomPoint = getAbsolutePoint(point);
-
-
-
-            mCurrentPath.addPoint(zoomPoint);
-
-            if (mCurrentPath.isTranslucent)
+            if (mCurrentPath != null)
             {
-                //FIXME
-                //mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
-                //mCurrentPath.draw(mTranslucentDrawingCanvas);
+                var zoomPoint = getAbsolutePoint(point);
+
+
+
+                mCurrentPath.addPoint(zoomPoint);
+
+                if (mCurrentPath.isTranslucent)
+                {
+                    //FIXME
+                    //mTranslucentDrawingCanvas.drawColor(Color.TRANSPARENT, PorterDuff.Mode.MULTIPLY);
+                    //mCurrentPath.draw(mTranslucentDrawingCanvas);
+                }
+                else
+                {
+                    mCurrentPath.drawLastPoint(bitmap);
+                }
             }
-            else
-            {
-                mCurrentPath.drawLastPoint(bitmap);
-            }
+
         }
 
         public void addPath(int id, int strokeColor, float strokeWidth, List<Model.Point> points)
