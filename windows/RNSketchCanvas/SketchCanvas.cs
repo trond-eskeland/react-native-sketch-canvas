@@ -45,6 +45,7 @@ namespace RNSketchCanvas
 
         private ScrollViewer scrollView = new ScrollViewer();
 
+        public bool didDrawBitmap { get; set; }
         public bool viewPortLocked { get; set; } = true;
         public SketchCanvas(ThemedReactContext Context)
         {
@@ -294,6 +295,7 @@ namespace RNSketchCanvas
                     restult = true;
                 }
                 mPaths.Clear();
+                didDrawBitmap = false;
 
             }
             catch (Exception)
@@ -565,7 +567,6 @@ namespace RNSketchCanvas
             await Dispatcher.RunAsync(CoreDispatcherPriority.Normal,
             () =>
             {
-                var bitmapWasNull = mBackgroundImage == null;
                 bitmap = createImage(false, false, false, false);
 
                 try
@@ -599,19 +600,23 @@ namespace RNSketchCanvas
                 if (bitmap != null && bitmap.PixelWidth != 1)
                 {
 
-                    Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+                    if (!didDrawBitmap)
                     {
-                        await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                        Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
                         {
+                            await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                            {
 
 
 
-                            scrollView.MinZoomFactor = 2.0f; //zoomFactor; // 1.61051f
+                                scrollView.MinZoomFactor = 2.0f; //zoomFactor; // 1.61051f
 
-                            var Succes = scrollView.ChangeView(null, null, 0.2f, false);
-                        });
-                    }, TimeSpan.FromMilliseconds(10));
+                                var Succes = scrollView.ChangeView(null, null, 0.2f, false);
+                            });
+                        }, TimeSpan.FromMilliseconds(10));
+                    }
 
+                    didDrawBitmap = true;
                 }
 
 
