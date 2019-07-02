@@ -205,9 +205,15 @@ class SketchCanvas extends React.Component {
         const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
         return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
       })
-      UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPath, [
-        data.path.id, processColor(data.path.color), data.path.width * this._screenScale, pathData
-      ])
+      UIManager.dispatchViewManagerCommand(
+        this._handle, UIManager.RNSketchCanvas.Commands.addPath,
+        [
+          data.path.id,
+          processColor(data.path.color),
+          data.path.width * this._screenScale,
+          pathData,
+        ],
+      );
     } else {
       this._pathsToProcess.filter(p => p.path.id === data.path.id).length === 0 && this._pathsToProcess.push(data)
     }

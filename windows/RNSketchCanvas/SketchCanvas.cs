@@ -216,11 +216,27 @@ namespace RNSketchCanvas
             var screenImageRatioWidth = (this.bitmap.PixelWidth / this.image.ActualWidth);
             var screenImageRatioHeight = (this.bitmap.PixelHeight / this.image.ActualHeight);
 
-            var w = this.Width;
-            var h = this.Height;
+            //var w = this.Width;
+            //var h = this.Height;
 
-            var horizontalOffset = (scrollView.HorizontalOffset * screenImageRatioWidth); // 100; //((scrollView.ExtentWidth - this.Width)) - (((scrollView.ExtentWidth - this.Width)) * 2); //(
-            var verticalOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
+            //var t = this.Width / this.image.ActualWidth;
+
+            //var t1 = (scrollView.ExtentWidth - this.Width);
+            //var t2 = t1 * screenImageRatioWidth;
+            //var t3 = t1 - (t1 * 2);
+
+            //var before = (scrollView.HorizontalOffset * screenImageRatioWidth);
+
+
+
+            var horizontalScrollOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
+            var horizontalCenterOffset = ((scrollView.ExtentWidth - this.Width) * screenImageRatioWidth) / 2;
+
+            var verticalScrollOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
+            var verticalCenterOffset = ((scrollView.ExtentHeight - this.Height) * screenImageRatioHeight) / 2;
+
+            var horizontalOffset = horizontalCenterOffset < 0 ? horizontalCenterOffset : horizontalScrollOffset; // t2 / 2; //t3 * screenImageRatioWidth; // 100; //((scrollView.ExtentWidth - this.Width)) - (((scrollView.ExtentWidth - this.Width)) * 2); //(
+            var verticalOffset = verticalCenterOffset < 0 ? verticalCenterOffset : verticalScrollOffset; // (scrollView.VerticalOffset * screenImageRatioHeight);
 
             var zoom = scrollView.ZoomFactor;
             // Debug.WriteLine($"scale: {scale}, widthRatio: {screenImageRatioWidth}, heightRatio: {screenImageRatioHeight}, actualWidth: {image.Width}, actualHeight: {image.Height} ");
@@ -300,6 +316,7 @@ namespace RNSketchCanvas
                     restult = true;
                 }
                 mPaths.Clear();
+                imageText.Clear();
                 didDrawBitmap = false;
 
             }
