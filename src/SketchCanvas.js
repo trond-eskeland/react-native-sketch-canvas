@@ -18,7 +18,7 @@ import { requestPermissions } from './handlePermissions';
 const RNSketchCanvas = requireNativeComponent('RNSketchCanvas', SketchCanvas, {
   nativeOnly: {
     nativeID: true,
-    onChange: true
+    onChange: true,
   }
 });
 const SketchCanvasManager = NativeModules.RNSketchCanvasManager || {};
@@ -128,15 +128,15 @@ class SketchCanvas extends React.Component {
               processColor(this._path.color),
               this._path.width * this._screenScale,
             ]
-          )
+          );
           UIManager.dispatchViewManagerCommand(
             this._handle,
             UIManager.RNSketchCanvas.Commands.addPoint,
             [
-              parseFloat((gestureState.x0 - this._offset.x).toFixed(2) * this._screenScale),
-              parseFloat((gestureState.y0 - this._offset.y).toFixed(2) * this._screenScale)
-            ]
-          )
+              parseFloat(x * this._screenScale),
+              parseFloat(y * this._screenScale),
+            ],
+          );
           this._path.data.push(`${x},${y}`);
           this.props.onStrokeStart(x, y);
         } else {
@@ -151,8 +151,8 @@ class SketchCanvas extends React.Component {
 
           if (this.props.touchEnabled) { 
             UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.addPoint, [
-              parseFloat((gestureState.moveX - this._offset.x).toFixed(2) * this._screenScale),
-              parseFloat((gestureState.moveY - this._offset.y).toFixed(2) * this._screenScale),
+              parseFloat(x * this._screenScale),
+              parseFloat(y * this._screenScale),
             ]);
             this._path.data.push(`${x},${y}`);
             this.props.onStrokeChanged(x, y);
@@ -202,7 +202,7 @@ class SketchCanvas extends React.Component {
     if (this._initialized) {
       if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data)
       const pathData = data.path.data.map(p => {
-        const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2))
+        const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
         return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
       })
       UIManager.dispatchViewManagerCommand(

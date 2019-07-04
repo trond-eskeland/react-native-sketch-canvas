@@ -357,6 +357,7 @@ export default class RNSketchCanvas extends React.Component {
       : 15;
 
     const file = this.props.image && this.props.image.uri.replace('file://', '');
+    const mode = this.props.image && this.props.image.mode;
 
     if (!this.state.contentStyle) {
       // return this.renderSpinner();
@@ -373,7 +374,7 @@ export default class RNSketchCanvas extends React.Component {
               strokeWidth={this.state.strokeWidth}
               onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
               text={this.state.imageText}
-              localSourceImage={file && { filename: file, mode: 'AspectFit' }}
+              localSourceImage={file && { filename: file, mode }}
               touchEnabled={this.state.touchEnabled}
               onDisabledTouch={(x, y) => this.editText(x, y)}
               onStrokeEnd={() => this.addDrawStep('line')}
