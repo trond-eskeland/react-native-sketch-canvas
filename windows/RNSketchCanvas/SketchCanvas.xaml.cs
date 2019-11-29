@@ -224,7 +224,21 @@ namespace RNSketchCanvas
                         var Succes = scrollView.ChangeView(null, null, 0.5f, false);
                         dispatchZoomEvent();
                     });
-                }, TimeSpan.FromMilliseconds(10));
+
+
+                }, TimeSpan.FromMilliseconds(100));
+
+
+                Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
+                {
+                    await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+                    {
+                        Debug.WriteLine("dispatchZoomEvent - ensure image loaded...");
+                        dispatchZoomEvent();
+                    });
+
+
+                }, TimeSpan.FromMilliseconds(1000));
 
             }
         }

@@ -3,6 +3,7 @@ import { View, StyleSheet } from 'react-native';
 
 const styles = StyleSheet.create({
   toolBar: {
+    paddingTop: 2,
     flexDirection: 'row',
     width: '100%',
     backgroundColor: '#FFFFFF',

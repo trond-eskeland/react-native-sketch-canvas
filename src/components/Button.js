@@ -4,9 +4,9 @@ import { TouchableOpacity, View, StyleSheet } from 'react-native';
 const styles = StyleSheet.create({
   functionButton: {
     marginHorizontal: 2.5,
-    marginVertical: 8,
-    height: 40,
-    width: 40,
+    marginVertical: 10,
+    height: 38,
+    width: 38,
     justifyContent: 'center',
     alignItems: 'center',
     borderRadius: 5,
@@ -15,14 +15,18 @@ const styles = StyleSheet.create({
 });
 
 
+// eslint-disable-next-line react/prefer-stateless-function
 class Button extends Component {
   render() {
     return (
-        <TouchableOpacity onPress={() => this.props.onPress()}>
-            <View style={styles.functionButton}>
-                {this.props.children}
-            </View>
-        </TouchableOpacity>
+      <TouchableOpacity
+        style={{ backgroundColor: 'white' }}
+        onPress={() => this.props.onPress()}
+      >
+        <View style={styles.functionButton}>
+            {this.props.children}
+        </View>
+      </TouchableOpacity>
     );
   }
 }

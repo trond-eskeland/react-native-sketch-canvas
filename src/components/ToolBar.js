@@ -22,6 +22,7 @@ import cloudActive from '../../resources/images/cloud_active.png';
 
 const styles = StyleSheet.create({
   toolBar: {
+    paddingTop: 2,
     flexDirection: 'row',
     width: '100%',
     backgroundColor: '#FFFFFF',
