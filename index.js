@@ -395,7 +395,7 @@ export default class RNSketchCanvas extends React.Component {
                     style={{
                       color: 'white',
                       backgroundColor: 'rgba(0,0,0,0.1)',
-                      fontSize: this.state.imageTextCurrent.fontSize,
+                      fontSize: 15,
                     }}
                     ref={(ref) => { this.textInput = ref; }}
                     onChangeText={text => this.editText(null, null, text)}
