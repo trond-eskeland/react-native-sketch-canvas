@@ -185,8 +185,8 @@ namespace RNSketchCanvas
                                               {
                                                   //VerticalAlignment = CanvasVerticalAlignment.Center,
                                                   //HorizontalAlignment = CanvasHorizontalAlignment.Center,
-                                                  FontFamily = "Comic Sans MS",
-                                                  FontSize = 25
+                                                  //FontFamily = "Comic Sans MS",
+                                                  FontSize = 30
                                               });
                         }
                     }

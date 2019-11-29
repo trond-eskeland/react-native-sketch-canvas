@@ -111,7 +111,7 @@ export default class RNSketchCanvas extends React.Component {
     imageTextDefault: {
       text: '',
       fontColor: '#FF3B3B',
-      fontSize: 15,
+      fontSize: 30,
       anchor: { x: 0, y: 0 },
       renderPosition: { x: 0, y: 0 },
       position: { x: 0, y: 0 },
@@ -138,7 +138,7 @@ export default class RNSketchCanvas extends React.Component {
     imageTextCurrent: {
       text: '',
       fontColor: '#FF3B3B',
-      fontSize: 15,
+      fontSize: 30,
       anchor: { x: 0, y: 0 },
       renderPosition: { x: 0, y: 0 },
       position: { x: 0, y: 0 },
