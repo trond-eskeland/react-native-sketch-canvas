@@ -45,7 +45,6 @@ namespace RNSketchCanvas
                 uiManager.AddUIBlock(new UIBlock(async (nativeViewHierarchyManager) =>
                 {
                     var view = (SketchCanvas)nativeViewHierarchyManager.ResolveView(tag);
-                    var bitmap = view.bitmap;
                     var base64 = await view.getBase64(type, transparent, includeImage, includeText, cropToImageSize);
 
 
@@ -58,33 +57,6 @@ namespace RNSketchCanvas
                 callback.Invoke(ex.Message, null);
             }
         }
-
-
-        //[ReactMethod]
-        //public void getZoomAndOffset(int tag, ICallback callback)
-        //{
-
-        //  var uiManager = Context.GetNativeModule<UIManagerModule>();
-        //  try
-        //  {
-        //    uiManager.AddUIBlock(new UIBlock(async (nativeViewHierarchyManager) =>
-        //    {
-        //      var view = (SketchCanvas)nativeViewHierarchyManager.ResolveView(tag);
-        //      var base64 = await view.getBase64(type, transparent, includeImage, includeText, cropToImageSize);
-
-
-
-        //      callback.Invoke(null, base64);
-        //    }
-        //    ));
-        //  }
-        //  catch (Exception ex)
-        //  {
-        //    callback.Invoke(ex.Message, null);
-        //  }
-        //}
-
-
     }
 }
 

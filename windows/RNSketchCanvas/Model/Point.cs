@@ -36,5 +36,10 @@ namespace RNSketchCanvas.Model
         }
 
 
+        public override string ToString()
+        {
+            return $"x:{x}, y:{y}";
+        }
+
     }
 }

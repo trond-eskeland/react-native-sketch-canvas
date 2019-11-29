@@ -43,8 +43,8 @@ namespace RNSketchCanvas
         [ReactProp("strokeColor")]
         public void StrokeColor(SketchCanvas view, JValue options)
         {
-            uint color = options.Value<uint>();
-            view.color = color;
+            uint rawColor = options.Value<uint>();
+            view.color2 = Helper.Utils.GetColor(rawColor);
         }
 
         [ReactProp("localSourceImage")]
@@ -93,7 +93,8 @@ namespace RNSketchCanvas
                     break;
                 case Commands.newPath:
                     id = args[0].Value<int>();
-                    var color = args[1].Value<UInt32>();
+                    var colorInteger = args[1].Value<uint>();
+                    var color = Helper.Utils.GetColor(colorInteger);
                     var strokeWidth = args[2].Value<float>();
 
                     view.newPath(id, color, (int)strokeWidth);
@@ -156,5 +157,9 @@ namespace RNSketchCanvas
             {  Commands.endPath.ToString(), (int)Commands.endPath },
             {  Commands.lockViewPort.ToString(), (int)Commands.lockViewPort },
         };
+
+
+
     }
+
 }
