@@ -215,6 +215,7 @@ export default class RNSketchCanvas extends React.Component {
       canvas.lockViewPort(false);
     } else if (mode === 'text') {
       if (this.state.imageTextCurrent.mode !== 'move') {
+        canvas.lockViewPort(false);
         const item = Object.assign({}, this.state.imageTextCurrent);
         item.mode = 'edit';
         this.setState({ touchEnabled: false, imageTextCurrent: item, drawingMode: mode });

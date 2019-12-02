@@ -79,30 +79,6 @@ namespace RNSketchCanvas
                 //  scrollView.ChangeView(0, 0, null);
             });
 
-            long ExtentWidthPropertyCallback = 0;
-            //ExtentWidthPropertyCallback = scrollView.RegisterPropertyChangedCallback(ScrollViewer.ExtentWidthProperty, (s, e) =>
-            //{
-            //    Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
-            //    {
-            //        await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            //        {
-            //            dispatchZoomEvent();
-            //            // scrollView.UnregisterPropertyChangedCallback(ScrollViewer.ExtentWidthProperty, ExtentWidthPropertyCallback);
-            //        });
-            //    }, TimeSpan.FromMilliseconds(100));
-            //});
-            //long ExtentHeightPropertyCallback = 0;
-            //ExtentHeightPropertyCallback = scrollView.RegisterPropertyChangedCallback(ScrollViewer.ExtentHeightProperty, (s, e) =>
-            //{
-            //    Windows.System.Threading.ThreadPoolTimer.CreateTimer(async (source) =>
-            //    {
-            //        await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
-            //        {
-            //            dispatchZoomEvent();
-            //            // scrollView.UnregisterPropertyChangedCallback(ScrollViewer.ExtentHeightProperty, ExtentHeightPropertyCallback);
-            //        });
-            //    }, TimeSpan.FromMilliseconds(100));
-            //});
 
             scrollView.DirectManipulationStarted += ScrollView_DirectManipulationStarted;
             scrollView.DirectManipulationCompleted += ScrollView_DirectManipulationCompleted;
@@ -309,54 +285,64 @@ namespace RNSketchCanvas
         private void dispatchZoomEvent()
         {
 
-            Debug.WriteLine("dispatchZoomEvent");
-
-            if (virtualBitmap == null)
-                return;
-
-            var zoom = scrollView.ZoomFactor;
-
-            var screenImageRatioWidth = (this.virtualBitmap.SizeInPixels.Width / this.canvas.ActualWidth);
-            var screenImageRatioHeight = (this.virtualBitmap.SizeInPixels.Height / this.canvas.ActualHeight);
-
-            var horizontalScrollOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
-            var horizontalCenterOffset = ((scrollView.ExtentWidth - this.Width) * screenImageRatioWidth) / 2;
-
-            var verticalScrollOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
-            var verticalCenterOffset = ((scrollView.ExtentHeight - this.Height) * screenImageRatioHeight) / 2;
-
-            var horizontalOffset = horizontalCenterOffset < 0 ? horizontalCenterOffset : horizontalScrollOffset;
-            var verticalOffset = verticalCenterOffset < 0 ? verticalCenterOffset : verticalScrollOffset;
-
-
-
-            double smallImageHorizontalOffset = 0;
-            if (this.Width > this.virtualBitmap.SizeInPixels.Width)
+            try
             {
-                smallImageHorizontalOffset = ((this.virtualBitmap.SizeInPixels.Width - this.Width) / 2);
+
+
+                // Debug.WriteLine("dispatchZoomEvent");
+
+                if (virtualBitmap == null)
+                    return;
+
+                var zoom = scrollView.ZoomFactor;
+
+                var screenImageRatioWidth = (this.virtualBitmap.SizeInPixels.Width / this.canvas.ActualWidth);
+                var screenImageRatioHeight = (this.virtualBitmap.SizeInPixels.Height / this.canvas.ActualHeight);
+
+                var horizontalScrollOffset = (scrollView.HorizontalOffset * screenImageRatioWidth);
+                var horizontalCenterOffset = ((scrollView.ExtentWidth - this.Width) * screenImageRatioWidth) / 2;
+
+                var verticalScrollOffset = (scrollView.VerticalOffset * screenImageRatioHeight);
+                var verticalCenterOffset = ((scrollView.ExtentHeight - this.Height) * screenImageRatioHeight) / 2;
+
+                var horizontalOffset = horizontalCenterOffset < 0 ? horizontalCenterOffset : horizontalScrollOffset;
+                var verticalOffset = verticalCenterOffset < 0 ? verticalCenterOffset : verticalScrollOffset;
+
+
+
+                double smallImageHorizontalOffset = 0;
+                if (this.Width > this.virtualBitmap.SizeInPixels.Width)
+                {
+                    smallImageHorizontalOffset = ((this.virtualBitmap.SizeInPixels.Width - this.Width) / 2);
+                }
+
+
+                double smallImageVerticalOffset = 0;
+                if (this.Height > this.virtualBitmap.SizeInPixels.Height)
+                {
+                    smallImageVerticalOffset = ((this.virtualBitmap.SizeInPixels.Height - this.Height) / 2);
+                }
+
+
+
+                this.GetReactContext()
+                  .GetNativeModule<UIManagerModule>()
+                  .EventDispatcher
+                  .DispatchEvent(
+                      new SketchCanvasZoomChangedEvent(
+                          this.GetTag(),
+                            zoom,
+                            screenImageRatioWidth,
+                            screenImageRatioHeight,
+                            smallImageHorizontalOffset == 0 ? horizontalOffset : smallImageHorizontalOffset,
+                            smallImageVerticalOffset == 0 ? verticalOffset : smallImageVerticalOffset));
+
+
             }
-
-
-            double smallImageVerticalOffset = 0;
-            if (this.Height > this.virtualBitmap.SizeInPixels.Height)
+            catch (Exception ex)
             {
-                smallImageVerticalOffset = ((this.virtualBitmap.SizeInPixels.Height - this.Height) / 2);
+                Debug.WriteLine(ex.Message);
             }
-
-
-
-            this.GetReactContext()
-              .GetNativeModule<UIManagerModule>()
-              .EventDispatcher
-              .DispatchEvent(
-                  new SketchCanvasZoomChangedEvent(
-                      this.GetTag(),
-                        zoom,
-                        screenImageRatioWidth,
-                        screenImageRatioHeight,
-                        smallImageHorizontalOffset == 0 ? horizontalOffset : smallImageHorizontalOffset,
-                        smallImageVerticalOffset == 0 ? verticalOffset : smallImageVerticalOffset));
-
             ReDraw();
         }
 
@@ -500,8 +486,17 @@ namespace RNSketchCanvas
         {
             if (mCurrentPath != null)
             {
-                var zoomPoint = getAbsolutePoint(point);
-                mCurrentPath.AddPoint(zoomPoint);
+                try
+                {
+                    var zoomPoint = getAbsolutePoint(point);
+                    mCurrentPath.AddPoint(zoomPoint);
+                }
+                catch (Exception ex)
+                {
+
+                    Debug.WriteLine(ex.Message);
+                }
+        
                 ReDraw();
             }
 
