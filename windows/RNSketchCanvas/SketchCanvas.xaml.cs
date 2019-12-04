@@ -112,6 +112,8 @@ namespace RNSketchCanvas
             scrollView.MaxHeight = double.MaxValue;
             scrollView.ZoomMode = ZoomMode.Enabled;
 
+            ReDraw(true);
+
         }
         private void Control_Unloaded(object sender, RoutedEventArgs e)
         {
@@ -662,10 +664,12 @@ namespace RNSketchCanvas
             end();
         }
 
-        private void ReDraw()
+        private void ReDraw(bool full = false)
         {
             try
             {
+                if (full)
+                    didRender = false;
                 if (canvas != null)
                     canvas.Invalidate();
             }
