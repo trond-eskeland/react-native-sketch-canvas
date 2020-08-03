@@ -99,6 +99,13 @@ RCT_EXPORT_METHOD(deletePath:(nonnull NSNumber *)reactTag pathId: (int) pathId)
     }];
 }
 
+RCT_EXPORT_METHOD(lockViewPort:(nonnull NSNumber *)reactTag pathId: (BOOL) enabled)
+{
+    [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {
+        [canvas lockViewPort: enabled];
+    }];
+}
+
 RCT_EXPORT_METHOD(endPath:(nonnull NSNumber *)reactTag)
 {
     [self runCanvas:reactTag block:^(RNSketchCanvas *canvas) {

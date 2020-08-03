@@ -18,6 +18,7 @@
     CGImageRef _frozenImage, _translucentFrozenImage;
     BOOL _needsFullRedraw;
 
+    UIScrollView *_scrollView;
     UIImage *_backgroundImage;
     UIImage *_backgroundImageScaled;
     NSString *_backgroundImageContentMode;
@@ -296,6 +297,11 @@
     [self setNeedsDisplay];
     [self notifyPathsUpdate];
 }
+
+- (void)lockViewPort: (BOOL)enabled {
+    NSLog(@"Fix me");
+}
+
 
 - (UIImage*)createImageWithTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
     if (_backgroundImage && cropToImageSize) {
