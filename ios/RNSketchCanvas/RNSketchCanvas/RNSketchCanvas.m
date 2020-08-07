@@ -19,11 +19,19 @@
     BOOL _needsFullRedraw;
 
     UIScrollView *_scrollView;
+    UIImageView *_imageView;
     UIImage *_backgroundImage;
     UIImage *_backgroundImageScaled;
     NSString *_backgroundImageContentMode;
     
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
+}
+
+
+- (instancetype) init  {
+    self = [super init];
+    
+    return self;
 }
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
@@ -36,13 +44,30 @@
 
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
+        [self createDrawingContext];
+//        _scrollView = [[UIScrollView alloc] initWithFrame: self.bounds];
+//        _imageView = [[UIImageView alloc] initWithFrame: CGRectMake(0, 0, 2000, 2000)];
+//        _imageView.contentMode =  UIViewContentModeScaleToFill; //UIViewContentModeCenter;
+//
+//
+//        _scrollView.contentSize = self.frame.size;
+//        [_scrollView addSubview:_imageView];
+//        _scrollView.minimumZoomScale = 0.1;
+//         _scrollView.maximumZoomScale = 2.0;
+//         _scrollView.zoomScale = 2.0;
+//        [self addSubview:_scrollView];
+//        _scrollView.delegate = self;
+        
     }
     return self;
 }
 
 - (void)drawRect:(CGRect)rect {
-    CGContextRef context = UIGraphicsGetCurrentContext();
+    
 
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    // UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
+    
     CGRect bounds = self.bounds;
 
     if (_needsFullRedraw) {
@@ -85,32 +110,38 @@
     for (CanvasText *text in _arrTextOnSketch) {
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
     }
+    
+    // _backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+    // UIGraphicsEndImageContext();
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
 
     if (!CGSizeEqualToSize(self.bounds.size, _lastSize)) {
-        _lastSize = self.bounds.size;
-        CGContextRelease(_drawingContext);
-        _drawingContext = nil;
-        [self createDrawingContext];
-        _needsFullRedraw = YES;
-        _backgroundImageScaled = nil;
-        
-        for (CanvasText *text in [_arrTextOnSketch arrayByAddingObjectsFromArray: _arrSketchOnText]) {
-            CGPoint position = text.position;
-            if (!text.isAbsoluteCoordinate) {
-                position.x *= self.bounds.size.width;
-                position.y *= self.bounds.size.height;
-            }
-            position.x -= text.drawRect.size.width * text.anchor.x;
-            position.y -= text.drawRect.size.height * text.anchor.y;
-            text.drawRect = CGRectMake(position.x, position.y, text.drawRect.size.width, text.drawRect.size.height);
-        }
-        
-        [self setNeedsDisplay];
+
     }
+    
+          _lastSize = self.bounds.size;
+    
+          CGContextRelease(_drawingContext);
+          _drawingContext = nil;
+          [self createDrawingContext];
+          _needsFullRedraw = YES;
+          _backgroundImageScaled = nil;
+          
+          for (CanvasText *text in [_arrTextOnSketch arrayByAddingObjectsFromArray: _arrSketchOnText]) {
+              CGPoint position = text.position;
+              if (!text.isAbsoluteCoordinate) {
+                  position.x *= self.bounds.size.width;
+                  position.y *= self.bounds.size.height;
+              }
+              position.x -= text.drawRect.size.width * text.anchor.x;
+              position.y -= text.drawRect.size.height * text.anchor.y;
+              text.drawRect = CGRectMake(position.x, position.y, text.drawRect.size.width, text.drawRect.size.height);
+          }
+          
+          [self setNeedsDisplay];
 }
 
 - (void)createDrawingContext {
