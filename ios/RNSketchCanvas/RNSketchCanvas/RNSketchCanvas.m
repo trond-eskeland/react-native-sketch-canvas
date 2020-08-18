@@ -28,11 +28,12 @@
 }
 
 
-- (instancetype) init  {
-    self = [super init];
-    
-    return self;
-}
+//- (instancetype) init  {
+//    self = [super init];
+//    self.backgroundColor = [UIColor redColor];
+//
+//    return self;
+//}
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
 {
@@ -118,6 +119,9 @@
 - (void)layoutSubviews {
     [super layoutSubviews];
 
+    
+    self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+    
     if (!CGSizeEqualToSize(self.bounds.size, _lastSize)) {
 
     }
@@ -402,7 +406,7 @@
     }
 }
 
-- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize onChange:(void(^)(BOOL, NSURL*))onChange {
     UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
     
     if (folder != nil && filename != nil) {
@@ -417,10 +421,14 @@
             NSData *imageData = [self getImageData:img type:type];
             [imageData writeToURL:fileURL atomically:YES];
 
+            onChange(YES, fileURL);
             if (_onChange) {
+                
                 _onChange(@{ @"success": @YES, @"path": [fileURL path]});
+
             }
         } else {
+            onChange(NO, NULL);
             if (_onChange) {
                 _onChange(@{ @"success": @NO, @"path": [NSNull null]});
             }

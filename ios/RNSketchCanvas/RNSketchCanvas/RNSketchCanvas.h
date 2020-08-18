@@ -2,7 +2,9 @@
 
 @class RCTEventDispatcher;
 
-@interface RNSketchCanvas : UIView <UIScrollViewDelegate>
+@interface RNSketchCanvas : UIView <UIScrollViewDelegate> {
+    void (^_completionHandler)(BOOL Success, NSURL* fileURL);
+}
 
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
 
@@ -17,8 +19,9 @@
 - (void)endPath;
 - (void)clear;
 - (void)lockViewPort: (BOOL)enabled;
-- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize onChange:(void(^)(BOOL, NSURL*))onChange;
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;
+
 
 @end
 
@@ -32,5 +35,6 @@
 @property (nonatomic) NSDictionary *attribute;
 @property (nonatomic) BOOL isAbsoluteCoordinate;
 @property (nonatomic) CGRect drawRect;
+
 
 @end
