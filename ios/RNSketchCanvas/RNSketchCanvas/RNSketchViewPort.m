@@ -16,7 +16,6 @@
 @implementation RNSketchViewPort
 {
     RCTEventDispatcher *_eventDispatcher;
-    //UIScrollView *_scrollView;
     RNSketchCanvas * _canvas;
     
 }
@@ -30,22 +29,11 @@
         _eventDispatcher = eventDispatcher;
         _canvas = [[RNSketchCanvas alloc] initWithEventDispatcher: eventDispatcher ];
         
-
-        
-        // self.backgroundColor = [UIColor blueColor];
         self.clearsContextBeforeDrawing = YES;
-        
-//        _scrollView = [[UIScrollView alloc] initWithFrame: self.bounds];
-//        _imageView = [[UIImageView alloc] initWithFrame: CGRectMake(0, 0, 2000, 2000)];
-//        _imageView.contentMode =  UIViewContentModeScaleToFill; //UIViewContentModeCenter;
-//
-//
         self.contentSize = self.frame.size;
-//        [_scrollView addSubview:_imageView];
         self.minimumZoomScale = 0.5;
-         self.maximumZoomScale = 5.001;
+        self.maximumZoomScale = 5.001;
         
-//        [self addSubview:_scrollView];
         self.delegate = self;
         [self addSubview:_canvas];
         
@@ -53,6 +41,7 @@
             self.automaticallyAdjustsScrollIndicatorInsets = NO;
         } else {
             // Fallback on earlier versions
+            // Not supported atm...
         }
         
     }
@@ -61,8 +50,9 @@
 
 - (void)layoutSubviews {
     [super layoutSubviews];
-    [_canvas layoutSubviews];
+    // [_canvas layoutSubviews];
 }
+
 // zoom and scroll
 
 - (UIView*)viewForZoomingInScrollView:(UIScrollView *)aScrollView {
@@ -71,21 +61,6 @@
 }
 
 - (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(CGFloat)scale {
-//    CGFloat zoomScale = scrollView.zoomScale;
-//    CGFloat offsetVertical = scrollView.contentOffset.y;
-//    CGFloat offsetHorizontal = scrollView.contentOffset.x;
-//    /**/
-//    self->_onChange(@{ @"zoomOffset":  @{
-//                               @"zoomFactor": @(zoomScale),
-//                                @"screenImageRatioWidth": @(1),
-//                                @"screenImageRatioHeight": @(1),
-//                                @"horizontalOffset": @(offsetHorizontal),
-//                                @"verticalOffset":  @(offsetVertical)
-//    } });
-//
-//
-//
-//    NSLog(@"zoomEnded: zoomScale: %f, offsetVertical: %f, offsetHorizontal: %f", zoomScale, offsetVertical, offsetHorizontal);
     [self dispatchZoomOffset];
 }
 
@@ -115,10 +90,6 @@
     NSLog(@"scrollEnded: zoomScale: %f, offsetVertical: %f, offsetHorizontal: %f", zoomScale, offsetVertical, offsetHorizontal);
 }
 
-//- (void)scrollViewDidScroll:(UIScrollView *)scrollView  {
-//
-//}
-
 
 // interface
 
@@ -126,7 +97,7 @@
 - (BOOL)openSketchFile:(NSString *)filename directory:(NSString*) directory contentMode:(NSString*)mode {
     _drawEnabled = NO;
     BOOL result = [_canvas openSketchFile:filename directory:directory contentMode:mode];
-    self.zoomScale = 1.001;
+    self.zoomScale = 1.0001;
     // [self dispatchZoomOffset];
     return result;
 }

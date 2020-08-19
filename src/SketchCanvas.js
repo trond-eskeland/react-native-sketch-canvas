@@ -1,8 +1,6 @@
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable class-methods-use-this */
 /* eslint-disable no-underscore-dangle */
-
-
 import React from 'react';
 import PropTypes from 'prop-types';
 import ReactNative, {
@@ -53,7 +51,11 @@ class SketchCanvas extends React.Component {
       alignment: PropTypes.oneOf(['Left', 'Center', 'Right']),
       lineHeightMultiple: PropTypes.number,
     })),
-    localSourceImage: PropTypes.shape({ filename: PropTypes.string, directory: PropTypes.string, mode: PropTypes.oneOf(['AspectFill', 'AspectFit', 'ScaleToFill']) }),
+    localSourceImage: PropTypes.shape({
+      filename: PropTypes.string,
+      directory: PropTypes.string,
+      mode: PropTypes.oneOf(['AspectFill', 'AspectFit', 'ScaleToFill']),
+    }),
 
     permissionDialogTitle: PropTypes.string,
     permissionDialogMessage: PropTypes.string,
@@ -103,10 +105,10 @@ class SketchCanvas extends React.Component {
   componentWillMount() {
     this.panResponder = PanResponder.create({
       // Ask to be the responder:
-      onStartShouldSetPanResponder: (evt, gestureState) => true,
-      onStartShouldSetPanResponderCapture: (evt, gestureState) => true,
-      onMoveShouldSetPanResponder: (evt, gestureState) => true,
-      onMoveShouldSetPanResponderCapture: (evt, gestureState) => true,
+      onStartShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponderCapture: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponderCapture: () => true,
 
       onPanResponderGrant: (evt, gestureState) => {
         // if (!this.props.touchEnabled) return
@@ -161,7 +163,7 @@ class SketchCanvas extends React.Component {
           }
         }
       },
-      onPanResponderRelease: (evt, gestureState) => {
+      onPanResponderRelease: () => {
         if (!this.props.touchEnabled) return;
         if (this._path) {
           this.props.onStrokeEnd({ path: this._path, size: this._size, drawer: this.props.user });
@@ -170,11 +172,11 @@ class SketchCanvas extends React.Component {
         UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.endPath, []);
       },
 
-      onShouldBlockNativeResponder: (evt, gestureState) => true,
+      onShouldBlockNativeResponder: () => true,
     });
   }
   async componentDidMount() {
-    const isStoragePermissionAuthorized = await requestPermissions(
+    await requestPermissions(
       this.props.permissionDialogTitle,
       this.props.permissionDialogMessage,
     );
@@ -192,9 +194,15 @@ class SketchCanvas extends React.Component {
 
   getBase64(imageType, transparent, includeImage, includeText, cropToImageSize, callback) {
     if (Platform.OS === 'ios') {
-      SketchCanvasManager.transferToBase64(this._handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
+      SketchCanvasManager.transferToBase64(
+        this._handle,
+        imageType, transparent, includeImage, includeText, cropToImageSize, callback,
+      );
     } else {
-      NativeModules.SketchCanvasModule.transferToBase64(this._handle, imageType, transparent, includeImage, includeText, cropToImageSize, callback);
+      NativeModules.SketchCanvasModule.transferToBase64(
+        this._handle,
+        imageType, transparent, includeImage, includeText, cropToImageSize, callback,
+      );
     }
   }
 
@@ -203,7 +211,7 @@ class SketchCanvas extends React.Component {
       if (this._paths.filter(p => p.path.id === data.path.id).length === 0) this._paths.push(data);
       const pathData = data.path.data.map((p) => {
         const coor = p.split(',').map(pp => parseFloat(pp).toFixed(2));
-        return `${coor[0] * this._screenScale * this._size.width / data.size.width},${coor[1] * this._screenScale * this._size.height / data.size.height}`;
+        return `${(coor[0] * this._screenScale * this._size.width) / data.size.width},${(coor[1] * this._screenScale * this._size.height) / data.size.height}`;
       });
       UIManager.dispatchViewManagerCommand(
         this._handle, UIManager.RNSketchCanvas.Commands.addPath,
@@ -220,7 +228,11 @@ class SketchCanvas extends React.Component {
   }
 
   save(imageType, transparent, folder, filename, includeImage, includeText, cropToImageSize) {
-    UIManager.dispatchViewManagerCommand(this._handle, UIManager.RNSketchCanvas.Commands.save, [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize]);
+    UIManager.dispatchViewManagerCommand(
+      this._handle,
+      UIManager.RNSketchCanvas.Commands.save,
+      [imageType, folder, filename, transparent, includeImage, includeText, cropToImageSize],
+    );
   }
 
   deletePath(id) {

@@ -1,3 +1,5 @@
+/* eslint-disable class-methods-use-this */
+/* eslint-disable react/forbid-prop-types */
 import React, { Component } from 'react';
 import {
   Image,
@@ -98,6 +100,8 @@ export default class RNSketchCanvas extends React.Component {
     requiredTouches: PropTypes.number,
     image: PropTypes.object,
     onSketchSaved: PropTypes.func,
+    showArrows: PropTypes.bool.isRequired,
+    showForms: PropTypes.bool.isRequired,
   };
 
   static defaultProps = {
@@ -111,7 +115,7 @@ export default class RNSketchCanvas extends React.Component {
     imageTextDefault: {
       text: '',
       fontColor: '#FF3B3B',
-      fontSize: 30,
+      fontSize: Platform.OS === 'windows' ? 30 : 15,
       anchor: { x: 0, y: 0 },
       renderPosition: { x: 0, y: 0 },
       position: { x: 0, y: 0 },
@@ -121,6 +125,7 @@ export default class RNSketchCanvas extends React.Component {
     minZoom: 0.2,
     scrollEnabled: true,
     requiredTouches: null,
+    image: null,
     onSketchSaved: () => {},
   };
 
@@ -178,13 +183,6 @@ export default class RNSketchCanvas extends React.Component {
     } else {
       console.warn('did not try to get image ', this.props);
     }
-  }
-
-
-  componentDidMount() {
-  }
-
-  componentWillReceiveProps(nextProps) {
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -260,8 +258,19 @@ export default class RNSketchCanvas extends React.Component {
     }
 
     const imageText = [...this.state.imageText, item];
-    this.setState({ imageText, imageTextCurrent: this.props.imageTextDefault, drawingMode: 'none' }, callback ? () => callback() : () => null);
-    this.addDrawStep('text');
+    this.setState({
+      imageText,
+      imageTextCurrent: this.props.imageTextDefault,
+      drawingMode: 'none',
+    }, async () => {
+      this.addDrawStep('text');
+      if (callback) {
+        await this.delay(100);
+        callback();
+      } else {
+        this.setDrawMode('zoom');
+      }
+    });
   }
 
   editText(x, y, text, color, mode) {
@@ -329,6 +338,8 @@ export default class RNSketchCanvas extends React.Component {
     this.setState({ zoom });
   }
 
+  delay = ms => new Promise(res => setTimeout(res, ms));
+
   renderSpinner() {
     return (
       <View style={{ flex: 1, alignSelf: 'center', justifyContent: 'center' }}>
@@ -340,7 +351,6 @@ export default class RNSketchCanvas extends React.Component {
   render() {
     const {
       color,
-      border,
     } = this.state.strokeColor;
     const {
       drawingMode,
@@ -353,12 +363,8 @@ export default class RNSketchCanvas extends React.Component {
       showArrows,
       showForms,
     } = this.props;
-    // const fontSize = zoomOffset ?
-    //   ((this.state.imageTextCurrent.fontSize * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
-    //   : 15;
-
     const fontSize = zoomOffset ?
-      ((15 * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
+      ((this.state.imageTextCurrent.fontSize * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
       : 15;
 
     const file = this.props.image && this.props.image.uri.replace('file://', '');
@@ -374,7 +380,7 @@ export default class RNSketchCanvas extends React.Component {
           <View style={{ flex: 1, backgroundColor: '#333333' }}>
             <SketchCanvas
               ref={(ref) => { canvas = ref; }}
-              style={{ flex: 1, marginBottom: this.state.showColorPicker ? 0 : 39 }}
+              style={{ flex: 1, marginBottom: 0 }}
               strokeColor={color}
               strokeWidth={this.state.strokeWidth}
               onSketchSaved={(success, path) => this.props.onSketchSaved(success, path)}
