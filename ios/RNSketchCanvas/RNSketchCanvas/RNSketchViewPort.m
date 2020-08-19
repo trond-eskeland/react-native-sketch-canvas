@@ -32,7 +32,7 @@
         
 
         
-        self.backgroundColor = [UIColor blueColor];
+        // self.backgroundColor = [UIColor blueColor];
         self.clearsContextBeforeDrawing = YES;
         
 //        _scrollView = [[UIScrollView alloc] initWithFrame: self.bounds];
@@ -42,13 +42,18 @@
 //
         self.contentSize = self.frame.size;
 //        [_scrollView addSubview:_imageView];
-        self.minimumZoomScale = 1.0;
-         self.maximumZoomScale = 1.001;
+        self.minimumZoomScale = 0.5;
+         self.maximumZoomScale = 5.001;
         
 //        [self addSubview:_scrollView];
         self.delegate = self;
         [self addSubview:_canvas];
-        self.zoomScale = 1.001;
+        
+        if (@available(iOS 13.0, *)) {
+            self.automaticallyAdjustsScrollIndicatorInsets = NO;
+        } else {
+            // Fallback on earlier versions
+        }
         
     }
     return self;
@@ -61,16 +66,69 @@
 // zoom and scroll
 
 - (UIView*)viewForZoomingInScrollView:(UIScrollView *)aScrollView {
+    
     return _canvas;
 }
+
+- (void)scrollViewDidEndZooming:(UIScrollView *)scrollView withView:(UIView *)view atScale:(CGFloat)scale {
+//    CGFloat zoomScale = scrollView.zoomScale;
+//    CGFloat offsetVertical = scrollView.contentOffset.y;
+//    CGFloat offsetHorizontal = scrollView.contentOffset.x;
+//    /**/
+//    self->_onChange(@{ @"zoomOffset":  @{
+//                               @"zoomFactor": @(zoomScale),
+//                                @"screenImageRatioWidth": @(1),
+//                                @"screenImageRatioHeight": @(1),
+//                                @"horizontalOffset": @(offsetHorizontal),
+//                                @"verticalOffset":  @(offsetVertical)
+//    } });
+//
+//
+//
+//    NSLog(@"zoomEnded: zoomScale: %f, offsetVertical: %f, offsetHorizontal: %f", zoomScale, offsetVertical, offsetHorizontal);
+    [self dispatchZoomOffset];
+}
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView {
+    [self dispatchZoomOffset];
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate {
+    if (!decelerate) {
+        [self dispatchZoomOffset];
+    }
+}
+
+- (void)dispatchZoomOffset {
+    CGFloat zoomScale = self.zoomScale;
+    CGFloat offsetVertical = self.contentOffset.y;
+    CGFloat offsetHorizontal = self.contentOffset.x;
+    /**/
+    self->_onChange(@{ @"zoomOffset":  @{
+                               @"zoomFactor": @(zoomScale),
+                                @"screenImageRatioWidth": @(1),
+                                @"screenImageRatioHeight": @(1),
+                                @"horizontalOffset": @(offsetHorizontal + 5),
+                                @"verticalOffset":  @(offsetVertical + 5)
+    } });
+    
+    NSLog(@"scrollEnded: zoomScale: %f, offsetVertical: %f, offsetHorizontal: %f", zoomScale, offsetVertical, offsetHorizontal);
+}
+
+//- (void)scrollViewDidScroll:(UIScrollView *)scrollView  {
+//
+//}
 
 
 // interface
 
 
 - (BOOL)openSketchFile:(NSString *)filename directory:(NSString*) directory contentMode:(NSString*)mode {
-
-    return [_canvas openSketchFile:filename directory:directory contentMode:mode];
+    _drawEnabled = NO;
+    BOOL result = [_canvas openSketchFile:filename directory:directory contentMode:mode];
+    self.zoomScale = 1.001;
+    // [self dispatchZoomOffset];
+    return result;
 }
 
 - (void)setCanvasText:(NSArray *)aText {
@@ -99,7 +157,7 @@
     if (!_drawEnabled) {
         return;
     }
-    [_canvas addPointX:x Y:y];
+    [_canvas addPointX:x / self.zoomScale Y:y / self.zoomScale];
 }
 
 - (void)endPath {
@@ -114,7 +172,6 @@
 }
 
 - (void)lockViewPort: (BOOL)enabled {
-    NSLog(@"Fix me");
     if (enabled) {
         self.pinchGestureRecognizer.enabled = YES;
         self.panGestureRecognizer.enabled = YES;

@@ -120,12 +120,9 @@
     [super layoutSubviews];
 
     
-    self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+    
     
     if (!CGSizeEqualToSize(self.bounds.size, _lastSize)) {
-
-    }
-    
           _lastSize = self.bounds.size;
     
           CGContextRelease(_drawingContext);
@@ -146,6 +143,9 @@
           }
           
           [self setNeedsDisplay];
+    }
+    
+
 }
 
 - (void)createDrawingContext {
@@ -184,8 +184,10 @@
             _backgroundImage = image;
             _backgroundImageScaled = nil;
             _backgroundImageContentMode = mode;
+            self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
             [self setNeedsDisplay];
 
+            
             return YES;
         }
     }
@@ -208,12 +210,13 @@
             text.text = property[@"text"];
             UIFont *font = nil;
             if (property[@"font"]) {
-                font = [UIFont fontWithName: property[@"font"] size: property[@"fontSize"] == nil ? 12 : [property[@"fontSize"] floatValue]];
-                font = font == nil ? [UIFont systemFontOfSize: property[@"fontSize"] == nil ? 12 : [property[@"fontSize"] floatValue]] : font;
+                font = [UIFont fontWithName: property[@"font"] size: property[@"fontSize"] == nil ? 15 : [property[@"fontSize"] floatValue]];
+                font = font == nil ? [UIFont systemFontOfSize: property[@"fontSize"] == nil ? 15 : [property[@"fontSize"] floatValue]] : font;
             } else if (property[@"fontSize"]) {
+                CGFloat fontSize = [property[@"fontSize"] floatValue];
                 font = [UIFont systemFontOfSize: [property[@"fontSize"] floatValue]];
             } else {
-                font = [UIFont systemFontOfSize: 12];
+                font = [UIFont systemFontOfSize: 15];
             }
             text.font = font;
             text.anchor = property[@"anchor"] == nil ?
@@ -264,7 +267,7 @@
     [_paths addObject: _currentPath];
 }
 
-- (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
+- (void)addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
     bool exist = false;
     for(int i=0; i<_paths.count; i++) {
         if (((RNSketchData*)_paths[i]).pathId == pathId) {
@@ -325,7 +328,7 @@
     _currentPath = nil;
 }
 
-- (void) clear {
+- (void)clear {
     [_paths removeAllObjects];
     _currentPath = nil;
     _needsFullRedraw = YES;

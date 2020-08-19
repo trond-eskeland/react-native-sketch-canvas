@@ -332,7 +332,7 @@ export default class RNSketchCanvas extends React.Component {
   renderSpinner() {
     return (
       <View style={{ flex: 1, alignSelf: 'center', justifyContent: 'center' }}>
-        <ActivityIndicator size={'large'} />
+        <ActivityIndicator size="large" />
       </View>
     );
   }
@@ -353,8 +353,12 @@ export default class RNSketchCanvas extends React.Component {
       showArrows,
       showForms,
     } = this.props;
+    // const fontSize = zoomOffset ?
+    //   ((this.state.imageTextCurrent.fontSize * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
+    //   : 15;
+
     const fontSize = zoomOffset ?
-      ((this.state.imageTextCurrent.fontSize * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
+      ((15 * zoomOffset.zoomFactor) / zoomOffset.screenImageRatioHeight)
       : 15;
 
     const file = this.props.image && this.props.image.uri.replace('file://', '');
@@ -379,8 +383,8 @@ export default class RNSketchCanvas extends React.Component {
               touchEnabled={this.state.touchEnabled}
               onDisabledTouch={(x, y) => this.editText(x, y)}
               onStrokeEnd={() => this.addDrawStep('line')}
-              onZoomChange={(zoomOffset) => {
-                this.setState({ zoomOffset });
+              onZoomChange={(offset) => {
+                this.setState({ zoomOffset: offset });
               }}
               requiredTouches={1}
               scale={this.state.zoom}
@@ -391,7 +395,7 @@ export default class RNSketchCanvas extends React.Component {
                 <TouchableOpacity onPress={() => this.editText(null, null, undefined, undefined, 'move')} >
                   <Text style={{ color: 'white', padding: 10 }}>OK</Text>
                 </TouchableOpacity>
-                <View style={{ justifyContent: 'center', alignItems: 'center' }}> 
+                <View style={{ justifyContent: 'center', alignItems: 'center' }}>
                   <TextInput
                     style={{
                       color: 'white',
@@ -424,7 +428,7 @@ export default class RNSketchCanvas extends React.Component {
                     style={{
                       backgroundColor: 'rgba(0,0,0,0.1)',
                       color: this.state.imageTextCurrent.fontColor,
-                      fontSize: fontSize,
+                      fontSize,
                       padding: 5,
                     }}
                     multiline
@@ -437,7 +441,7 @@ export default class RNSketchCanvas extends React.Component {
           </View>
           <View style={{ width: '100%', backgroundColor: 'rgba(0,0,0,0)' }}>
             <ToolBar
-              onPress={mode => this.setDrawMode(mode)}
+              onPress={drawMode => this.setDrawMode(drawMode)}
               onColorChange={selectedColor => this.onColorChange(selectedColor)}
               onUndo={() => this.undoDrawStep()}
               showColorPicker={showColorPicker}
