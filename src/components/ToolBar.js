@@ -1,3 +1,4 @@
+/* eslint-disable react/forbid-prop-types */
 import React, { Component } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import PropTypes from 'prop-types';
@@ -5,7 +6,7 @@ import Button from '../components/Button';
 import ColorPicker from '../components/ColorPicker';
 import FormPicker from '../components/FormPicker';
 
-import brush from '../../resources/images/brush.png'
+import brush from '../../resources/images/brush.png';
 import brushActive from '../../resources/images/brush_active.png';
 import title from '../../resources/images/title.png';
 import titleActive from '../../resources/images/title_active.png';
@@ -22,7 +23,7 @@ import cloudActive from '../../resources/images/cloud_active.png';
 
 const styles = StyleSheet.create({
   toolBar: {
-    paddingTop: 2,
+    paddingTop: 0,
     flexDirection: 'row',
     width: '100%',
     backgroundColor: '#FFFFFF',
@@ -30,10 +31,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-evenly',
   },
   toolBarBorder: {
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-    borderWidth: 0.4,
-    borderBottomWidth: 0,
+    // borderTopLeftRadius: 10,
+    // borderTopRightRadius: 10,
+    // borderWidth: 1,
+    // borderBottomWidth: 0,
   },
   strokeColorButton: {
     marginHorizontal: 2.5, marginVertical: 8, width: 30, height: 30, borderRadius: 15,
@@ -41,7 +42,6 @@ const styles = StyleSheet.create({
 });
 
 class ToolBar extends Component {
-
   static propTypes = {
     drawingMode: PropTypes.string.isRequired,
     strokeColor: PropTypes.object.isRequired,
@@ -79,13 +79,15 @@ class ToolBar extends Component {
     switch (this.state.optionToolbarType) {
       case 'color':
         return (
-          <ColorPicker
-            onPress={(strokeColor) => {
+          <View style={{ position: 'absolute' }}>
+            <ColorPicker
+              onPress={(strokeColor) => {
               this.setState({ optionToolbarType: '' });
               this.props.onColorChange(strokeColor);
             }}
-
-          />);
+            />
+          </View>
+        );
       case 'form':
         return (
           <FormPicker
@@ -113,7 +115,7 @@ class ToolBar extends Component {
     } = this.props;
 
     return (
-      <View style={{ width: '100%', backgroundColor: '#333333' }}>
+      <View style={{ width: '100%', backgroundColor: '#333333', paddingTop: 50 }}>
         {this.renderOptionBar()}
         <View style={[styles.toolBar, !this.state.optionToolbarType && styles.toolBarBorder]}>
           <Button onPress={() => onPress('zoom')}>
@@ -123,7 +125,10 @@ class ToolBar extends Component {
             <Image source={drawingMode === 'line' ? brushActive : brush} />
           </Button>
           { showForms &&
-          <Button onPress={() => this.setState({ optionToolbarType: this.state.optionToolbarType === 'form' ? '' : 'form' })}>
+          <Button onPress={() => this.setState({
+            optionToolbarType: this.state.optionToolbarType === 'form' ? '' : 'form',
+            })}
+          >
             <Image source={this.getFormIcon()} />
           </Button>
           }
@@ -135,8 +140,15 @@ class ToolBar extends Component {
             <Image source={drawingMode === 'arrow' ? arrowActive : arrow} />
           </Button>
           }
-          <Button onPress={() => this.setState({ optionToolbarType: this.state.optionToolbarType === 'color' ? '' : 'color' })}>
-            <View style={[{ backgroundColor: strokeColor.color, borderWidth: strokeColor.border ? 1 : 0 }, styles.strokeColorButton]} />
+          <Button onPress={() => this.setState({
+            optionToolbarType: this.state.optionToolbarType === 'color' ? '' : 'color',
+            })}
+          >
+            <View style={[{
+              backgroundColor: strokeColor.color,
+              borderWidth: strokeColor.border ? 1 : 0,
+            }, styles.strokeColorButton]}
+            />
           </Button>
           <Button onPress={() => onUndo()}>
             <Image source={undo} />

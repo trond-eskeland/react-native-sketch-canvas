@@ -18,12 +18,22 @@
     CGImageRef _frozenImage, _translucentFrozenImage;
     BOOL _needsFullRedraw;
 
+    UIScrollView *_scrollView;
+    UIImageView *_imageView;
     UIImage *_backgroundImage;
     UIImage *_backgroundImageScaled;
     NSString *_backgroundImageContentMode;
     
     NSArray *_arrTextOnSketch, *_arrSketchOnText;
 }
+
+
+//- (instancetype) init  {
+//    self = [super init];
+//    self.backgroundColor = [UIColor redColor];
+//
+//    return self;
+//}
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher
 {
@@ -35,13 +45,30 @@
 
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
+        [self createDrawingContext];
+//        _scrollView = [[UIScrollView alloc] initWithFrame: self.bounds];
+//        _imageView = [[UIImageView alloc] initWithFrame: CGRectMake(0, 0, 2000, 2000)];
+//        _imageView.contentMode =  UIViewContentModeScaleToFill; //UIViewContentModeCenter;
+//
+//
+//        _scrollView.contentSize = self.frame.size;
+//        [_scrollView addSubview:_imageView];
+//        _scrollView.minimumZoomScale = 0.1;
+//         _scrollView.maximumZoomScale = 2.0;
+//         _scrollView.zoomScale = 2.0;
+//        [self addSubview:_scrollView];
+//        _scrollView.delegate = self;
+        
     }
     return self;
 }
 
 - (void)drawRect:(CGRect)rect {
-    CGContextRef context = UIGraphicsGetCurrentContext();
+    
 
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    // UIGraphicsBeginImageContextWithOptions(self.bounds.size, NO, 0.0);
+    
     CGRect bounds = self.bounds;
 
     if (_needsFullRedraw) {
@@ -84,32 +111,41 @@
     for (CanvasText *text in _arrTextOnSketch) {
         [text.text drawInRect: text.drawRect withAttributes: text.attribute];
     }
+    
+    // _backgroundImage = UIGraphicsGetImageFromCurrentImageContext();
+    // UIGraphicsEndImageContext();
 }
 
 - (void)layoutSubviews {
     [super layoutSubviews];
 
+    
+    
+    
     if (!CGSizeEqualToSize(self.bounds.size, _lastSize)) {
-        _lastSize = self.bounds.size;
-        CGContextRelease(_drawingContext);
-        _drawingContext = nil;
-        [self createDrawingContext];
-        _needsFullRedraw = YES;
-        _backgroundImageScaled = nil;
-        
-        for (CanvasText *text in [_arrTextOnSketch arrayByAddingObjectsFromArray: _arrSketchOnText]) {
-            CGPoint position = text.position;
-            if (!text.isAbsoluteCoordinate) {
-                position.x *= self.bounds.size.width;
-                position.y *= self.bounds.size.height;
-            }
-            position.x -= text.drawRect.size.width * text.anchor.x;
-            position.y -= text.drawRect.size.height * text.anchor.y;
-            text.drawRect = CGRectMake(position.x, position.y, text.drawRect.size.width, text.drawRect.size.height);
-        }
-        
-        [self setNeedsDisplay];
+          _lastSize = self.bounds.size;
+    
+          CGContextRelease(_drawingContext);
+          _drawingContext = nil;
+          [self createDrawingContext];
+          _needsFullRedraw = YES;
+          _backgroundImageScaled = nil;
+          
+          for (CanvasText *text in [_arrTextOnSketch arrayByAddingObjectsFromArray: _arrSketchOnText]) {
+              CGPoint position = text.position;
+              if (!text.isAbsoluteCoordinate) {
+                  position.x *= self.bounds.size.width;
+                  position.y *= self.bounds.size.height;
+              }
+              position.x -= text.drawRect.size.width * text.anchor.x;
+              position.y -= text.drawRect.size.height * text.anchor.y;
+              text.drawRect = CGRectMake(position.x, position.y, text.drawRect.size.width, text.drawRect.size.height);
+          }
+          
+          [self setNeedsDisplay];
     }
+    
+
 }
 
 - (void)createDrawingContext {
@@ -148,8 +184,10 @@
             _backgroundImage = image;
             _backgroundImageScaled = nil;
             _backgroundImageContentMode = mode;
+            self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
             [self setNeedsDisplay];
 
+            
             return YES;
         }
     }
@@ -172,12 +210,13 @@
             text.text = property[@"text"];
             UIFont *font = nil;
             if (property[@"font"]) {
-                font = [UIFont fontWithName: property[@"font"] size: property[@"fontSize"] == nil ? 12 : [property[@"fontSize"] floatValue]];
-                font = font == nil ? [UIFont systemFontOfSize: property[@"fontSize"] == nil ? 12 : [property[@"fontSize"] floatValue]] : font;
+                font = [UIFont fontWithName: property[@"font"] size: property[@"fontSize"] == nil ? 15 : [property[@"fontSize"] floatValue]];
+                font = font == nil ? [UIFont systemFontOfSize: property[@"fontSize"] == nil ? 15 : [property[@"fontSize"] floatValue]] : font;
             } else if (property[@"fontSize"]) {
+                CGFloat fontSize = [property[@"fontSize"] floatValue];
                 font = [UIFont systemFontOfSize: [property[@"fontSize"] floatValue]];
             } else {
-                font = [UIFont systemFontOfSize: 12];
+                font = [UIFont systemFontOfSize: 15];
             }
             text.font = font;
             text.anchor = property[@"anchor"] == nil ?
@@ -228,7 +267,7 @@
     [_paths addObject: _currentPath];
 }
 
-- (void) addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
+- (void)addPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth points:(NSArray*) points {
     bool exist = false;
     for(int i=0; i<_paths.count; i++) {
         if (((RNSketchData*)_paths[i]).pathId == pathId) {
@@ -289,13 +328,18 @@
     _currentPath = nil;
 }
 
-- (void) clear {
+- (void)clear {
     [_paths removeAllObjects];
     _currentPath = nil;
     _needsFullRedraw = YES;
     [self setNeedsDisplay];
     [self notifyPathsUpdate];
 }
+
+- (void)lockViewPort: (BOOL)enabled {
+    NSLog(@"Fix me");
+}
+
 
 - (UIImage*)createImageWithTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
     if (_backgroundImage && cropToImageSize) {
@@ -365,7 +409,7 @@
     }
 }
 
-- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize {
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize onChange:(void(^)(BOOL, NSURL*))onChange {
     UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
     
     if (folder != nil && filename != nil) {
@@ -380,10 +424,14 @@
             NSData *imageData = [self getImageData:img type:type];
             [imageData writeToURL:fileURL atomically:YES];
 
+            onChange(YES, fileURL);
             if (_onChange) {
+                
                 _onChange(@{ @"success": @YES, @"path": [fileURL path]});
+
             }
         } else {
+            onChange(NO, NULL);
             if (_onChange) {
                 _onChange(@{ @"success": @NO, @"path": [NSNull null]});
             }

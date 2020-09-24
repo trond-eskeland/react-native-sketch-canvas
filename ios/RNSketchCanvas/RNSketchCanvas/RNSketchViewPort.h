@@ -1,15 +1,19 @@
+//
+//  RNSketchViewPort.h
+//  Pods
+//
+//  Created by Trond Eskeland on 04/08/2020.
+//
+
 #import <UIKit/UIKit.h>
 
 @class RCTEventDispatcher;
 
-@interface RNSketchCanvas : UIView <UIScrollViewDelegate> {
-    void (^_completionHandler)(BOOL Success, NSURL* fileURL);
-}
+@interface RNSketchViewPort : UIScrollView <UIScrollViewDelegate>
 
 @property (nonatomic, copy) RCTBubblingEventBlock onChange;
 
 - (instancetype)initWithEventDispatcher:(RCTEventDispatcher *)eventDispatcher;
-
 - (BOOL)openSketchFile:(NSString *)filename directory:(NSString*) directory contentMode:(NSString*)mode;
 - (void)setCanvasText:(NSArray *)text;
 - (void)newPath:(int) pathId strokeColor:(UIColor*) strokeColor strokeWidth:(int) strokeWidth;
@@ -19,22 +23,7 @@
 - (void)endPath;
 - (void)clear;
 - (void)lockViewPort: (BOOL)enabled;
-- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize onChange:(void(^)(BOOL, NSURL*))onChange;
+- (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;
 - (NSString*) transferToBase64OfType: (NSString*) type withTransparentBackground: (BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize;
-
-
-@end
-
-
-@interface CanvasText : NSObject
-
-@property (nonatomic) NSString *text;
-@property (nonatomic) UIFont *font;
-@property (nonatomic) UIColor *fontColor;
-@property (nonatomic) CGPoint anchor, position;
-@property (nonatomic) NSDictionary *attribute;
-@property (nonatomic) BOOL isAbsoluteCoordinate;
-@property (nonatomic) CGRect drawRect;
-
 
 @end

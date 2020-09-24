@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BF31341E24ED43010063F7DB /* RNSketchViewPort.m in Sources */ = {isa = PBXBuildFile; fileRef = BF31341D24ED43010063F7DB /* RNSketchViewPort.m */; };
 		DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */ = {isa = PBXBuildFile; fileRef = DE0C997F1F32D596001BDE8B /* RNSketchData.m */; };
 		DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */ = {isa = PBXBuildFile; fileRef = DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */; };
 		DED3A13720A4159A00D72FBF /* Utility.m in Sources */ = {isa = PBXBuildFile; fileRef = DED3A13520A4159A00D72FBF /* Utility.m */; };
@@ -28,6 +29,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BF31341C24ED43010063F7DB /* RNSketchViewPort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchViewPort.h; sourceTree = "<group>"; };
+		BF31341D24ED43010063F7DB /* RNSketchViewPort.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchViewPort.m; sourceTree = "<group>"; };
 		DE0C997E1F32D596001BDE8B /* RNSketchData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchData.h; sourceTree = "<group>"; };
 		DE0C997F1F32D596001BDE8B /* RNSketchData.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = RNSketchData.m; sourceTree = "<group>"; };
 		DEB694851F322F2A00DC6841 /* RNSketchCanvasManager.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = RNSketchCanvasManager.h; sourceTree = "<group>"; };
@@ -69,6 +72,8 @@
 		DEFBA25A1F322B6000A4545C /* RNSketchCanvas */ = {
 			isa = PBXGroup;
 			children = (
+				BF31341C24ED43010063F7DB /* RNSketchViewPort.h */,
+				BF31341D24ED43010063F7DB /* RNSketchViewPort.m */,
 				DEB694851F322F2A00DC6841 /* RNSketchCanvasManager.h */,
 				DEB694861F322F2A00DC6841 /* RNSketchCanvasManager.m */,
 				DEFBA25B1F322B6000A4545C /* RNSketchCanvas.h */,
@@ -121,6 +126,7 @@
 			developmentRegion = English;
 			hasScannedForEncodings = 0;
 			knownRegions = (
+				English,
 				en,
 			);
 			mainGroup = DEFBA24F1F322B5F00A4545C;
@@ -141,6 +147,7 @@
 				DEFBA25D1F322B6000A4545C /* RNSketchCanvas.m in Sources */,
 				DED3A13720A4159A00D72FBF /* Utility.m in Sources */,
 				DE0C99801F32D596001BDE8B /* RNSketchData.m in Sources */,
+				BF31341E24ED43010063F7DB /* RNSketchViewPort.m in Sources */,
 				DEB694891F322F2A00DC6841 /* RNSketchCanvasManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

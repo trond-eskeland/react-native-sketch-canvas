@@ -13,7 +13,7 @@ const styles = StyleSheet.create({
   toolBarBorder: {
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
-    borderWidth: 0.4,
+    borderTopWidth: 0.4,
     borderBottomWidth: 0,
   },
   strokeColorButton: {
