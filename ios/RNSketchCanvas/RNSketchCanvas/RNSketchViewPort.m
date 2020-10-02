@@ -48,6 +48,11 @@
     return self;
 }
 
+- (void)dealloc {
+    _eventDispatcher = nil;
+    _canvas = nil;
+}
+
 - (void)layoutSubviews {
     [super layoutSubviews];
     // [_canvas layoutSubviews];
@@ -161,7 +166,8 @@
         } else {
            self->_onChange(@{ @"success": @NO, @"path": [NSNull null]});
         }
-        
+
+        // self->_canvas = nil;
         NSLog(@"File saved");
     }];
 

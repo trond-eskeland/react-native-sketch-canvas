@@ -45,22 +45,33 @@
 
         self.backgroundColor = [UIColor clearColor];
         self.clearsContextBeforeDrawing = YES;
-        [self createDrawingContext];
-//        _scrollView = [[UIScrollView alloc] initWithFrame: self.bounds];
-//        _imageView = [[UIImageView alloc] initWithFrame: CGRectMake(0, 0, 2000, 2000)];
-//        _imageView.contentMode =  UIViewContentModeScaleToFill; //UIViewContentModeCenter;
-//
-//
-//        _scrollView.contentSize = self.frame.size;
-//        [_scrollView addSubview:_imageView];
-//        _scrollView.minimumZoomScale = 0.1;
-//         _scrollView.maximumZoomScale = 2.0;
-//         _scrollView.zoomScale = 2.0;
-//        [self addSubview:_scrollView];
-//        _scrollView.delegate = self;
-        
     }
     return self;
+}
+
+- (void)dealloc {
+  
+    
+    CGImageRelease(_frozenImage);
+    CGImageRelease(_translucentFrozenImage);
+    CGContextRelease(_drawingContext);
+    CGContextRelease(_translucentDrawingContext);
+
+    
+    
+    _drawingContext = nil;
+    _translucentDrawingContext = nil;
+    
+    _eventDispatcher = nil;
+    _currentPath = nil;
+    
+    _imageView = nil;
+    _backgroundImage = nil;
+    _backgroundImageScaled = nil;
+    
+    _frozenImage = nil;
+    _translucentFrozenImage = nil;
+
 }
 
 - (void)drawRect:(CGRect)rect {
@@ -149,6 +160,11 @@
 }
 
 - (void)createDrawingContext {
+    CGContextRelease(_drawingContext);
+    CGContextRelease(_translucentDrawingContext);
+    _drawingContext = nil;
+    _translucentDrawingContext = nil;
+    
     CGFloat scale = self.window.screen.scale;
     CGSize size = self.bounds.size;
     size.width *= scale;
@@ -185,6 +201,8 @@
             _backgroundImageScaled = nil;
             _backgroundImageContentMode = mode;
             self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+            // self.frame = CGRectMake(0, 0, _backgroundImage.size.width / 2, _backgroundImage.size.height / 2);
+            //self.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
             [self setNeedsDisplay];
 
             
@@ -405,12 +423,13 @@
         UIImage *img = UIGraphicsGetImageFromCurrentImageContext();
         UIGraphicsEndImageContext();
         
+        
         return img;
     }
 }
 
 - (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize onChange:(void(^)(BOOL, NSURL*))onChange {
-    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:true];
     
     if (folder != nil && filename != nil) {
         NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];
@@ -442,6 +461,7 @@
         }
         UIImageWriteToSavedPhotosAlbum(img, self, @selector(image:didFinishSavingWithError:contextInfo:), nil);
     }
+
 }
 
 - (UIImage *)scaleImage:(UIImage *)originalImage toSize:(CGSize)size contentMode: (NSString*)mode
@@ -490,6 +510,7 @@
         _onChange(@{ @"pathsUpdate": @(_paths.count) });
     }
 }
+
 
 @end
 
