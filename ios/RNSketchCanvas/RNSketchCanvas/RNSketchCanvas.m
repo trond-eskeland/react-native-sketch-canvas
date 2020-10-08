@@ -200,7 +200,23 @@
             _backgroundImage = image;
             _backgroundImageScaled = nil;
             _backgroundImageContentMode = mode;
-            self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+            
+            
+            CGSize screenSize = [UIScreen mainScreen].bounds.size;
+            
+            
+            float oldWidth = _backgroundImage.size.width;
+            float scaleFactor = screenSize.width / oldWidth;
+
+            float newHeight = _backgroundImage.size.height * scaleFactor;
+            float newWidth = oldWidth * scaleFactor;
+            
+            
+            self.frame = CGRectMake(0, 0, newWidth * 2, newHeight * 2);
+            
+            // self.frame = CGRectMake(0, 0, _backgroundImage.size.width, _backgroundImage.size.height);
+            
+            // Old
             // self.frame = CGRectMake(0, 0, _backgroundImage.size.width / 2, _backgroundImage.size.height / 2);
             //self.frame = CGRectMake(0, 0, self.bounds.size.width, self.bounds.size.height);
             [self setNeedsDisplay];
@@ -429,7 +445,7 @@
 }
 
 - (void)saveImageOfType:(NSString*) type folder:(NSString*) folder filename:(NSString*) filename withTransparentBackground:(BOOL) transparent includeImage:(BOOL)includeImage includeText:(BOOL)includeText cropToImageSize:(BOOL)cropToImageSize onChange:(void(^)(BOOL, NSURL*))onChange {
-    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:true];
+    UIImage *img = [self createImageWithTransparentBackground:transparent includeImage:includeImage includeText:(BOOL)includeText cropToImageSize:cropToImageSize];
     
     if (folder != nil && filename != nil) {
         NSURL *tempDir = [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES] URLByAppendingPathComponent: folder];

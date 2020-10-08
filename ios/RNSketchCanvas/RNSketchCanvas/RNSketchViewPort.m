@@ -103,7 +103,7 @@
     _drawEnabled = NO;
     BOOL result = [_canvas openSketchFile:filename directory:directory contentMode:mode];
     self.zoomScale = 1.0001;
-    // [self dispatchZoomOffset];
+    
     return result;
 }
 
